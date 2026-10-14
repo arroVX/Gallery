@@ -32,27 +32,15 @@ function EditForm({
     }
   };
 
+  const input =
+    "w-full rounded-xl border border-black/10 bg-black/[0.03] px-3 py-2.5 text-sm font-medium outline-none focus:border-charcoal";
+
   return (
-    <div className="mt-3 space-y-2 rounded-2xl bg-white p-3 shadow-card">
-      <input
-        value={caption}
-        onChange={(e) => setCaption(e.target.value)}
-        placeholder="Caption"
-        className="w-full rounded-xl border border-hairline bg-ivory px-3 py-2.5 text-sm outline-none focus:border-rosewood"
-      />
+    <div className="mt-4 space-y-2 rounded-2xl border border-black/[0.06] bg-black/[0.02] p-3">
+      <input value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Caption" className={input} />
       <div className="grid grid-cols-2 gap-2">
-        <input
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="Lokasi"
-          className="rounded-xl border border-hairline bg-ivory px-3 py-2.5 text-sm outline-none focus:border-rosewood"
-        />
-        <input
-          value={takenAt}
-          onChange={(e) => setTakenAt(e.target.value)}
-          type="date"
-          className="rounded-xl border border-hairline bg-ivory px-3 py-2.5 text-sm outline-none focus:border-rosewood"
-        />
+        <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Lokasi" className={input} />
+        <input value={takenAt} onChange={(e) => setTakenAt(e.target.value)} type="date" className={input} />
       </div>
       <div className="flex gap-1.5">
         {ALBUMS.filter((a) => a !== "Semua").map((a) => (
@@ -60,7 +48,7 @@ function EditForm({
             key={a}
             onClick={() => setAlbum(a)}
             className={`flex-1 rounded-full py-2 text-[11px] font-bold ${
-              album === a ? "bg-charcoal text-ivory" : "bg-cream text-charcoal"
+              album === a ? "bg-charcoal text-white" : "bg-black/[0.06] text-charcoal"
             }`}
           >
             {a}
@@ -69,28 +57,25 @@ function EditForm({
       </div>
       <button
         onClick={() => setFavorite((f) => !f)}
-        className="flex w-full items-center justify-between rounded-xl bg-cream px-3 py-2.5 text-sm font-semibold"
+        className="flex w-full items-center justify-between rounded-xl bg-white px-3 py-2.5 text-sm font-bold"
       >
         <span>Jadikan favorit</span>
         <span
           className={`flex h-6 w-11 items-center rounded-full p-0.5 transition ${
-            favorite ? "justify-end bg-rosewood" : "justify-start bg-charcoal/20"
+            favorite ? "justify-end bg-charcoal" : "justify-start bg-charcoal/20"
           }`}
         >
           <span className="h-5 w-5 rounded-full bg-white" />
         </span>
       </button>
       <div className="flex gap-2">
-        <button
-          onClick={onCancel}
-          className="flex-1 rounded-full border border-hairline py-2.5 text-sm font-bold"
-        >
+        <button onClick={onCancel} className="flex-1 rounded-full border border-black/15 py-2.5 text-sm font-bold">
           Batal
         </button>
         <button
           onClick={save}
           disabled={saving}
-          className="flex-1 rounded-full bg-charcoal py-2.5 text-sm font-bold text-ivory disabled:opacity-50"
+          className="flex-1 rounded-full bg-charcoal py-2.5 text-sm font-bold text-white disabled:opacity-50"
         >
           {saving ? "Menyimpan…" : "Simpan"}
         </button>
@@ -166,118 +151,118 @@ export default function PhotoLightbox({
   return (
     <AnimatePresence>
       {photo && index !== null && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-charcoal/60"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 320, damping: 34 }}
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0, bottom: 0.6 }}
-            onDragEnd={(_, info) => {
-              if (info.offset.y > 120 || info.velocity.y > 600) onClose();
-            }}
-            className="absolute inset-x-0 bottom-0 mx-auto max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-ivory"
+            initial={{ y: 60, opacity: 0, scale: 0.98 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 60, opacity: 0, scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="relative max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-t-[24px] bg-white shadow-pop sm:rounded-[24px]"
           >
-            <div className="sticky top-0 z-10 flex justify-center bg-ivory/90 py-2 backdrop-blur">
-              <span className="h-1 w-10 rounded-full bg-charcoal/20" />
-            </div>
-            <div className="px-4 pb-6">
-              <div className="relative overflow-hidden rounded-2xl bg-cream">
+            <button
+              onClick={onClose}
+              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-[16px] font-bold text-white backdrop-blur transition hover:bg-black"
+              aria-label="Tutup"
+            >
+              ✕
+            </button>
+            <div className="grid sm:grid-cols-[1.25fr_1fr]">
+              <div className="relative min-h-[320px] overflow-hidden bg-ink sm:min-h-[480px]">
                 <Image
                   key={photo.id}
                   src={photo.src}
                   alt={photo.caption}
                   width={photo.width}
                   height={photo.height}
-                  sizes="(max-width: 480px) 100vw, 420px"
-                  className="max-h-[52dvh] w-full object-contain"
+                  sizes="(max-width: 640px) 100vw, 560px"
+                  className="h-full max-h-[46dvh] w-full object-cover sm:max-h-none sm:min-h-[480px]"
                   priority
                 />
+                <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-white/15 py-1 pl-1 pr-3 backdrop-blur-md">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[11px] font-extrabold text-charcoal">
+                    {(photo.location || "K").charAt(0)}
+                  </span>
+                  <span className="max-w-[140px] truncate text-[11px] font-bold text-white">
+                    {photo.location || photo.album}
+                  </span>
+                </div>
               </div>
-              <div className="mt-3 flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-hand text-lg leading-none text-rosewood">
-                    {formatDate(photo.takenAt)}
+
+              <div className="p-5 sm:p-6">
+                <p className="text-[11px] font-bold tracking-widest text-charcoal/50">
+                  {formatDate(photo.takenAt).toUpperCase()} — {photo.album.toUpperCase()}
+                </p>
+                <h3 className="mt-2 text-[26px] font-extrabold leading-[1.05] tracking-tighter">
+                  {photo.caption}
+                </h3>
+                <p className="mt-1 text-[13px] font-medium text-charcoal/60">{photo.location}</p>
+
+                {canWrite ? (
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={() => {
+                        setConfirming(false);
+                        setEditing((e) => !e);
+                      }}
+                      className="flex-1 rounded-full border border-black/15 bg-white py-2.5 text-[13px] font-bold active:scale-[0.98]"
+                    >
+                      {editing ? "Tutup edit" : "Edit"}
+                    </button>
+                    <button
+                      onClick={doDelete}
+                      disabled={busy}
+                      className={`flex-1 rounded-full py-2.5 text-[13px] font-bold active:scale-[0.98] disabled:opacity-50 ${
+                        confirming ? "bg-red-700 text-white" : "border border-red-300 bg-white text-red-700"
+                      }`}
+                    >
+                      {busy ? "Menghapus…" : confirming ? "Ketuk lagi untuk hapus" : "Hapus"}
+                    </button>
+                  </div>
+                ) : (
+                  <p className="mt-4 rounded-xl bg-black/[0.04] px-3 py-2 text-center text-xs font-semibold text-charcoal/60">
+                    <Link href="/upload" className="font-bold text-charcoal underline">
+                      Masuk
+                    </Link>{" "}
+                    dulu untuk edit / hapus foto.
                   </p>
-                  <h3 className="mt-1 font-serif text-2xl leading-tight">{photo.caption}</h3>
-                  <p className="mt-1 text-sm text-muted">{photo.location}</p>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="shrink-0 rounded-full border border-hairline bg-white px-3 py-1.5 text-xs font-bold"
-                  aria-label="Tutup"
-                >
-                  Tutup
-                </button>
-              </div>
+                )}
 
-              {canWrite ? (
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={() => {
-                      setConfirming(false);
-                      setEditing((e) => !e);
+                {editing && canWrite && (
+                  <EditForm
+                    key={photo.id}
+                    photo={photo}
+                    onCancel={() => setEditing(false)}
+                    onSave={async (patch) => {
+                      await updatePhoto(photo.id, patch);
+                      setEditing(false);
                     }}
-                    className="flex-1 rounded-full border border-charcoal/20 bg-white py-2.5 text-sm font-bold active:scale-[0.98]"
-                  >
-                    {editing ? "Tutup edit" : "Edit"}
-                  </button>
+                  />
+                )}
+
+                <div className="mt-5 flex items-center justify-between border-t border-black/[0.07] pt-4">
                   <button
-                    onClick={doDelete}
-                    disabled={busy}
-                    className={`flex-1 rounded-full py-2.5 text-sm font-bold active:scale-[0.98] disabled:opacity-50 ${
-                      confirming ? "bg-red-700 text-white" : "border border-red-300 bg-white text-red-700"
-                    }`}
+                    onClick={prev}
+                    className="rounded-full bg-charcoal px-5 py-2.5 text-[13px] font-bold text-white active:scale-95"
                   >
-                    {busy ? "Menghapus…" : confirming ? "Ketuk lagi untuk hapus" : "Hapus"}
+                    ← Prev
+                  </button>
+                  <p className="font-mono text-[12px] font-bold text-charcoal/50">
+                    {index + 1} / {photos.length}
+                  </p>
+                  <button
+                    onClick={next}
+                    className="rounded-full bg-charcoal px-5 py-2.5 text-[13px] font-bold text-white active:scale-95"
+                  >
+                    Next →
                   </button>
                 </div>
-              ) : (
-                <p className="mt-3 rounded-xl bg-cream px-3 py-2 text-center text-xs font-semibold text-muted">
-                  <Link href="/upload" className="font-bold text-rosewood">
-                    Masuk
-                  </Link>{" "}
-                  dulu untuk edit / hapus foto.
-                </p>
-              )}
-
-              {editing && canWrite && (
-                <EditForm
-                  key={photo.id}
-                  photo={photo}
-                  onCancel={() => setEditing(false)}
-                  onSave={async (patch) => {
-                    await updatePhoto(photo.id, patch);
-                    setEditing(false);
-                  }}
-                />
-              )}
-
-              <div className="mt-4 flex items-center justify-between">
-                <button
-                  onClick={prev}
-                  className="rounded-full bg-charcoal px-5 py-2.5 text-sm font-bold text-ivory active:scale-95"
-                >
-                  ← Prev
-                </button>
-                <p className="text-xs font-semibold text-muted">
-                  {index + 1} / {photos.length}
-                </p>
-                <button
-                  onClick={next}
-                  className="rounded-full bg-charcoal px-5 py-2.5 text-sm font-bold text-ivory active:scale-95"
-                >
-                  Next →
-                </button>
               </div>
             </div>
           </motion.div>

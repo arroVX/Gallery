@@ -17,7 +17,6 @@ export default function GalleryPage() {
     [album, all]
   );
 
-  // Jaga index lightbox tetap valid saat foto dihapus
   useEffect(() => {
     if (index !== null && index >= photos.length) {
       setIndex(photos.length > 0 ? photos.length - 1 : null);
@@ -25,23 +24,37 @@ export default function GalleryPage() {
   }, [photos.length, index]);
 
   return (
-    <main className="px-4 pt-4">
-      <h1 className="font-serif text-4xl">Galeri</h1>
-      <p className="mt-0.5 font-hand text-xl text-rosewood">
-        {live && photos.length === 0
-          ? "belum ada foto — upload dulu"
-          : `${photos.length} foto tersimpan rapi`}
-      </p>
+    <main className="px-5 pt-8 md:px-10 md:pt-12">
+      {/* Header — Luna Photo Gallery reference */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="inline-block rounded-full bg-black/[0.05] px-3 py-1 text-[11px] font-bold tracking-wide">
+            Our Stories
+          </p>
+          <h1 className="mt-3 text-[42px] font-extrabold leading-[0.95] tracking-tighter sm:text-[64px]">
+            Photo Gallery
+          </h1>
+          <p className="mt-2 text-[13px] font-semibold text-charcoal/60">
+            {live && photos.length === 0
+              ? "Belum ada foto — upload dulu"
+              : `${photos.length} foto tersimpan rapi`}
+          </p>
+        </div>
+        <p className="max-w-[220px] text-right text-[12.5px] font-medium leading-relaxed text-charcoal/60">
+          Captured moments from our desert trips and scenic routes.
+        </p>
+      </div>
 
-      <div className="no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1">
+      {/* Filters */}
+      <div className="no-scrollbar -mx-5 mt-6 flex gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:px-0">
         {ALBUMS.map((a) => {
           const active = a === album;
           return (
             <button
               key={a}
               onClick={() => setAlbum(a)}
-              className={`relative shrink-0 rounded-full px-4 py-2 text-xs font-bold ${
-                active ? "text-ivory" : "bg-white text-charcoal shadow-card"
+              className={`relative shrink-0 rounded-full px-5 py-2.5 text-[12px] font-bold transition ${
+                active ? "text-white" : "bg-black/[0.05] text-charcoal hover:bg-black/[0.08]"
               }`}
             >
               {active && (
@@ -64,7 +77,7 @@ export default function GalleryPage() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.25 }}
-          className="mt-3"
+          className="mt-5"
         >
           <GalleryGrid photos={photos} onSelect={setIndex} />
         </motion.div>
