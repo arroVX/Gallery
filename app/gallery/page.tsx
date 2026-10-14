@@ -10,7 +10,7 @@ import PhotoLightbox from "@/components/PhotoLightbox";
 export default function GalleryPage() {
   const [album, setAlbum] = useState<(typeof ALBUMS)[number]>("Semua");
   const [index, setIndex] = useState<number | null>(null);
-  const { photos: all, live } = usePhotos();
+  const { photos: all, live, loading } = usePhotos();
 
   const photos = useMemo(
     () => (album === "Semua" ? all : all.filter((p) => p.album === album)),
@@ -56,18 +56,25 @@ export default function GalleryPage() {
         })}
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={album}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.22 }}
-          className="mt-4"
-        >
-          <GalleryGrid photos={photos} onSelect={setIndex} />
-        </motion.div>
-      </AnimatePresence>
+      {loading ? (
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-black border-t-transparent" />
+          <p className="font-serif text-[12px] italic">Memuat foto dari cloud…</p>
+        </div>
+      ) : (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={album}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22 }}
+            className="mt-4"
+          >
+            <GalleryGrid photos={photos} onSelect={setIndex} />
+          </motion.div>
+        </AnimatePresence>
+      )}
 
       <PhotoLightbox photos={photos} index={index} onClose={() => setIndex(null)} onNav={setIndex} />
     </main>

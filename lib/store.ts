@@ -64,19 +64,28 @@ export function useUser() {
 
 // Foto: data asli dari Firestore jika terkonfigurasi, dummy jika belum.
 export function usePhotos() {
-  const [photos, setPhotos] = useState<Photo[]>(PHOTOS);
+  // Jika Firebase dikonfigurasi mulai dari array kosong; dummy hanya jika belum terkonfigurasi.
+  const [photos, setPhotos] = useState<Photo[]>(isFirebaseConfigured ? [] : PHOTOS);
   const [live, setLive] = useState(false);
+  const [loading, setLoading] = useState(isFirebaseConfigured);
 
   useEffect(() => {
     if (!isFirebaseConfigured || !db) return;
-    const q = query(collection(db, "photos"), orderBy("takenAt", "desc"), limit(100));
+    const q = query(collection(db, "photos"), orderBy("uploadedAt", "desc"), limit(100));
     const unsub = onSnapshot(
       q,
       (snap) => {
         setPhotos(snap.docs.map((d) => toPhoto(d.id, d.data())));
         setLive(true);
+        setLoading(false);
       },
-      () => setLive(false)
+      (err) => {
+        console.error("[Firestore] onSnapshot error:", err);
+        // Fallback ke dummy data jika Firestore gagal
+        setPhotos(PHOTOS);
+        setLive(false);
+        setLoading(false);
+      }
     );
     return unsub;
   }, []);
@@ -111,12 +120,12 @@ export function usePhotos() {
     [live, photos]
   );
 
-  return { photos, live, updatePhoto, removePhoto };
+  return { photos, live, loading, updatePhoto, removePhoto };
 }
 
 // Timeline: data asli dari Firestore jika terkonfigurasi, dummy jika belum.
 export function useTimeline() {
-  const [events, setEvents] = useState<TimelineEvent[]>(TIMELINE);
+  const [events, setEvents] = useState<TimelineEvent[]>(isFirebaseConfigured ? [] : TIMELINE);
 
   useEffect(() => {
     if (!isFirebaseConfigured || !db) return;
@@ -124,7 +133,10 @@ export function useTimeline() {
     const unsub = onSnapshot(
       q,
       (snap) => setEvents(snap.docs.map((d) => toEvent(d.id, d.data()))),
-      () => {}
+      (err) => {
+        console.error("[Firestore] timeline onSnapshot error:", err);
+        setEvents(TIMELINE);
+      }
     );
     return unsub;
   }, []);

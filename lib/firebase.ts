@@ -13,7 +13,7 @@ const config = {
 };
 
 export const isFirebaseConfigured = Boolean(
-  config.apiKey && config.projectId && config.appId
+  config.apiKey && config.projectId && config.appId && config.storageBucket
 );
 
 let app: FirebaseApp | null = null;
@@ -22,10 +22,16 @@ let db: Firestore | null = null;
 let storage: FirebaseStorage | null = null;
 
 if (isFirebaseConfigured) {
-  app = getApps().length ? getApps()[0]! : initializeApp(config as Record<string, string>);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  storage = getStorage(app);
+  try {
+    app = getApps().length ? getApps()[0]! : initializeApp(config as Record<string, string>);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    // Inisialisasi storage dengan URL bucket eksplisit agar support
+    // domain baru (*.firebasestorage.app) maupun lama (*.appspot.com)
+    storage = getStorage(app, `gs://${config.storageBucket}`);
+  } catch (err) {
+    console.error("[Firebase] Gagal inisialisasi:", err);
+  }
 }
 
 export { app, auth, db, storage };
