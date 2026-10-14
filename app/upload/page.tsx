@@ -62,23 +62,11 @@ export default function UploadPage() {
     setError(null);
     setDone(null);
     if (picks.length === 0) return setError("Pilih minimal 1 foto dulu.");
-    if (!isFirebaseConfigured || !db || !storage || !auth?.currentUser) {
-      // Mode demo: simulasi progres
-      setProgress(0);
-      const t = setInterval(() => {
-        setProgress((p) => {
-          if (p === null) return 0;
-          if (p >= 100) {
-            clearInterval(t);
-            setDone(`${picks.length} foto siap. Sambungkan Firebase untuk upload asli.`);
-            setPicks([]);
-            return null;
-          }
-          return p + 20;
-        });
-      }, 250);
-      return;
-    }
+    // Diagnostik: tunjukkan kondisi mana yang gagal
+    if (!isFirebaseConfigured) return setError("❌ Firebase belum terkonfigurasi — cek env NEXT_PUBLIC_FIREBASE_*");
+    if (!db) return setError("❌ Firestore (db) null — Firebase gagal inisialisasi");
+    if (!storage) return setError("❌ Storage null — cek FIREBASE_STORAGE_BUCKET atau error di console");
+    if (!auth?.currentUser) return setError("❌ Belum login — silakan masuk dulu");
     try {
       let doneCount = 0;
       for (const { file } of picks) {
