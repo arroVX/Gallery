@@ -119,9 +119,10 @@ export default function UploadPage() {
       setDone(`${doneCount} foto berhasil diupload.`);
       setPicks([]);
       setCaption("");
-    } catch {
+    } catch (err: unknown) {
       setProgress(null);
-      setError("Upload gagal. Coba lagi.");
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(`Upload gagal: ${msg}`);
     }
   };
 
