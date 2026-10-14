@@ -8,6 +8,7 @@ export type Photo = {
   takenAt: string; // ISO date
   album: string;
   favorite?: boolean;
+  storagePath?: string;
 };
 
 export const ALBUMS = ["Semua", "Kencan", "Trip", "Harian"] as const;

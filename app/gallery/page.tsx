@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ALBUMS } from "@/lib/gallery";
 import { usePhotos } from "@/lib/store";
@@ -16,6 +16,13 @@ export default function GalleryPage() {
     () => (album === "Semua" ? all : all.filter((p) => p.album === album)),
     [album, all]
   );
+
+  // Jaga index lightbox tetap valid saat foto dihapus
+  useEffect(() => {
+    if (index !== null && index >= photos.length) {
+      setIndex(photos.length > 0 ? photos.length - 1 : null);
+    }
+  }, [photos.length, index]);
 
   return (
     <main className="px-4 pt-4">

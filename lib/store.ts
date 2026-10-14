@@ -1,13 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   collection,
+  deleteDoc,
+  doc,
   limit,
   onSnapshot,
   orderBy,
   query,
+  updateDoc,
   type DocumentData,
 } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "./firebase";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import { deleteObject, ref } from "firebase/storage";
+import { auth, db, isFirebaseConfigured, storage } from "./firebase";
 import { PHOTOS, TIMELINE, type Photo, type TimelineEvent } from "./gallery";
 
 const asISODate = (v: unknown): string => {
@@ -32,6 +37,7 @@ const toPhoto = (id: string, d: DocumentData): Photo => ({
   takenAt: asISODate(d.takenAt),
   album: String(d.album ?? "Harian"),
   favorite: Boolean(d.isFavorite ?? false),
+  storagePath: typeof d.storagePath === "string" ? d.storagePath : undefined,
 });
 
 const toEvent = (id: string, d: DocumentData): TimelineEvent => ({
@@ -42,6 +48,19 @@ const toEvent = (id: string, d: DocumentData): TimelineEvent => ({
   coverId: String(d.coverPhotoId ?? ""),
   photoIds: Array.isArray(d.photoIds) ? d.photoIds.map(String) : [],
 });
+
+export type PhotoPatch = Partial<
+  Pick<Photo, "caption" | "location" | "takenAt" | "album" | "favorite">
+>;
+
+export function useUser() {
+  const [user, setUser] = useState<User | null>(null);
+  useEffect(() => {
+    if (!auth) return;
+    return onAuthStateChanged(auth, setUser);
+  }, []);
+  return user;
+}
 
 // Foto: data asli dari Firestore jika terkonfigurasi, dummy jika belum.
 export function usePhotos() {
@@ -54,7 +73,7 @@ export function usePhotos() {
     const unsub = onSnapshot(
       q,
       (snap) => {
-        setPhotos(snap.docs.map((doc) => toPhoto(doc.id, doc.data())));
+        setPhotos(snap.docs.map((d) => toPhoto(d.id, d.data())));
         setLive(true);
       },
       () => setLive(false)
@@ -62,7 +81,37 @@ export function usePhotos() {
     return unsub;
   }, []);
 
-  return { photos, live };
+  const updatePhoto = useCallback(
+    async (id: string, patch: PhotoPatch) => {
+      if (live && db) {
+        await updateDoc(doc(db, "photos", id), { ...patch });
+      } else {
+        setPhotos((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+      }
+    },
+    [live]
+  );
+
+  const removePhoto = useCallback(
+    async (id: string) => {
+      const target = photos.find((p) => p.id === id);
+      if (live && db) {
+        await deleteDoc(doc(db, "photos", id));
+        if (target?.storagePath && storage) {
+          try {
+            await deleteObject(ref(storage, target.storagePath));
+          } catch {
+            // file mungkin sudah tidak ada — abaikan
+          }
+        }
+      } else {
+        setPhotos((prev) => prev.filter((p) => p.id !== id));
+      }
+    },
+    [live, photos]
+  );
+
+  return { photos, live, updatePhoto, removePhoto };
 }
 
 // Timeline: data asli dari Firestore jika terkonfigurasi, dummy jika belum.
@@ -74,7 +123,7 @@ export function useTimeline() {
     const q = query(collection(db, "timeline_events"), orderBy("order", "asc"), limit(50));
     const unsub = onSnapshot(
       q,
-      (snap) => setEvents(snap.docs.map((doc) => toEvent(doc.id, doc.data()))),
+      (snap) => setEvents(snap.docs.map((d) => toEvent(d.id, d.data()))),
       () => {}
     );
     return unsub;

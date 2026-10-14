@@ -1,9 +1,103 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { formatDate, type Photo } from "@/lib/gallery";
+import { ALBUMS, formatDate, type Photo } from "@/lib/gallery";
+import { usePhotos, useUser, type PhotoPatch } from "@/lib/store";
+
+function EditForm({
+  photo,
+  onSave,
+  onCancel,
+}: {
+  photo: Photo;
+  onSave: (patch: PhotoPatch) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [caption, setCaption] = useState(photo.caption);
+  const [location, setLocation] = useState(photo.location);
+  const [takenAt, setTakenAt] = useState(photo.takenAt);
+  const [album, setAlbum] = useState(photo.album);
+  const [favorite, setFavorite] = useState(!!photo.favorite);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await onSave({ caption, location, takenAt, album, favorite });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 space-y-2 rounded-2xl bg-white p-3 shadow-card">
+      <input
+        value={caption}
+        onChange={(e) => setCaption(e.target.value)}
+        placeholder="Caption"
+        className="w-full rounded-xl border border-hairline bg-ivory px-3 py-2.5 text-sm outline-none focus:border-rosewood"
+      />
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          placeholder="Lokasi"
+          className="rounded-xl border border-hairline bg-ivory px-3 py-2.5 text-sm outline-none focus:border-rosewood"
+        />
+        <input
+          value={takenAt}
+          onChange={(e) => setTakenAt(e.target.value)}
+          type="date"
+          className="rounded-xl border border-hairline bg-ivory px-3 py-2.5 text-sm outline-none focus:border-rosewood"
+        />
+      </div>
+      <div className="flex gap-1.5">
+        {ALBUMS.filter((a) => a !== "Semua").map((a) => (
+          <button
+            key={a}
+            onClick={() => setAlbum(a)}
+            className={`flex-1 rounded-full py-2 text-[11px] font-bold ${
+              album === a ? "bg-charcoal text-ivory" : "bg-cream text-charcoal"
+            }`}
+          >
+            {a}
+          </button>
+        ))}
+      </div>
+      <button
+        onClick={() => setFavorite((f) => !f)}
+        className="flex w-full items-center justify-between rounded-xl bg-cream px-3 py-2.5 text-sm font-semibold"
+      >
+        <span>Jadikan favorit</span>
+        <span
+          className={`flex h-6 w-11 items-center rounded-full p-0.5 transition ${
+            favorite ? "justify-end bg-rosewood" : "justify-start bg-charcoal/20"
+          }`}
+        >
+          <span className="h-5 w-5 rounded-full bg-white" />
+        </span>
+      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={onCancel}
+          className="flex-1 rounded-full border border-hairline py-2.5 text-sm font-bold"
+        >
+          Batal
+        </button>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="flex-1 rounded-full bg-charcoal py-2.5 text-sm font-bold text-ivory disabled:opacity-50"
+        >
+          {saving ? "Menyimpan…" : "Simpan"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function PhotoLightbox({
   photos,
@@ -17,23 +111,27 @@ export default function PhotoLightbox({
   onNav: (index: number) => void;
 }) {
   const photo: Photo | null = index === null ? null : photos[index] ?? null;
+  const { live, updatePhoto, removePhoto } = usePhotos();
+  const user = useUser();
+  const canWrite = !live || !!user;
 
-  const prev = useCallback(() => {
-    if (index === null) return;
-    onNav((index - 1 + photos.length) % photos.length);
-  }, [index, photos.length, onNav]);
+  const [editing, setEditing] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  const next = useCallback(() => {
-    if (index === null) return;
-    onNav((index + 1) % photos.length);
-  }, [index, photos.length, onNav]);
+  useEffect(() => {
+    setEditing(false);
+    setConfirming(false);
+  }, [photo?.id]);
 
   useEffect(() => {
     if (index === null) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") prev();
-      if (e.key === "ArrowRight") next();
+      if (!editing) {
+        if (e.key === "ArrowLeft") onNav((index - 1 + photos.length) % photos.length);
+        if (e.key === "ArrowRight") onNav((index + 1) % photos.length);
+      }
     };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -41,7 +139,29 @@ export default function PhotoLightbox({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [index, onClose, prev, next]);
+  }, [index, onClose, onNav, photos.length, editing]);
+
+  const prev = () => {
+    if (index !== null) onNav((index - 1 + photos.length) % photos.length);
+  };
+  const next = () => {
+    if (index !== null) onNav((index + 1) % photos.length);
+  };
+
+  const doDelete = async () => {
+    if (!photo) return;
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    setBusy(true);
+    try {
+      await removePhoto(photo.id);
+      onClose();
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -99,6 +219,49 @@ export default function PhotoLightbox({
                   Tutup
                 </button>
               </div>
+
+              {canWrite ? (
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => {
+                      setConfirming(false);
+                      setEditing((e) => !e);
+                    }}
+                    className="flex-1 rounded-full border border-charcoal/20 bg-white py-2.5 text-sm font-bold active:scale-[0.98]"
+                  >
+                    {editing ? "Tutup edit" : "Edit"}
+                  </button>
+                  <button
+                    onClick={doDelete}
+                    disabled={busy}
+                    className={`flex-1 rounded-full py-2.5 text-sm font-bold active:scale-[0.98] disabled:opacity-50 ${
+                      confirming ? "bg-red-700 text-white" : "border border-red-300 bg-white text-red-700"
+                    }`}
+                  >
+                    {busy ? "Menghapus…" : confirming ? "Ketuk lagi untuk hapus" : "Hapus"}
+                  </button>
+                </div>
+              ) : (
+                <p className="mt-3 rounded-xl bg-cream px-3 py-2 text-center text-xs font-semibold text-muted">
+                  <Link href="/upload" className="font-bold text-rosewood">
+                    Masuk
+                  </Link>{" "}
+                  dulu untuk edit / hapus foto.
+                </p>
+              )}
+
+              {editing && canWrite && (
+                <EditForm
+                  key={photo.id}
+                  photo={photo}
+                  onCancel={() => setEditing(false)}
+                  onSave={async (patch) => {
+                    await updatePhoto(photo.id, patch);
+                    setEditing(false);
+                  }}
+                />
+              )}
+
               <div className="mt-4 flex items-center justify-between">
                 <button
                   onClick={prev}
