@@ -24,47 +24,33 @@ export default function GalleryPage() {
   }, [photos.length, index]);
 
   return (
-    <main className="px-5 pt-8 md:px-10 md:pt-12">
-      {/* Header — Luna Photo Gallery reference */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="inline-block rounded-full bg-black/[0.05] px-3 py-1 text-[11px] font-bold tracking-wide">
-            Our Stories
-          </p>
-          <h1 className="mt-3 text-[42px] font-extrabold leading-[0.95] tracking-tighter sm:text-[64px]">
-            Photo Gallery
-          </h1>
-          <p className="mt-2 text-[13px] font-semibold text-charcoal/60">
-            {live && photos.length === 0
-              ? "Belum ada foto — upload dulu"
-              : `${photos.length} foto tersimpan rapi`}
-          </p>
-        </div>
-        <p className="max-w-[220px] text-right text-[12.5px] font-medium leading-relaxed text-charcoal/60">
-          Captured moments from our desert trips and scenic routes.
+    <main className="px-3 py-4 sm:px-5">
+      <div className="border-[3px] border-black bg-white shadow-hardSm">
+        <p className="border-b-[3px] border-black py-1.5 text-center text-[10px] font-extrabold tracking-[0.3em]">
+          ★ OUR STORIES ★
+        </p>
+        <h1 className="py-4 text-center font-display text-[42px] leading-none sm:text-[72px]">
+          PHOTO GALLERY!
+        </h1>
+        <p className="border-t-[3px] border-black py-2 text-center font-serif text-[12px] italic">
+          {live && photos.length === 0
+            ? "Belum ada foto — upload dulu"
+            : `${photos.length} foto tersimpan rapi — captured moments from our trips.`}
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="no-scrollbar -mx-5 mt-6 flex gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:px-0">
+      <div className="no-scrollbar -mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1">
         {ALBUMS.map((a) => {
           const active = a === album;
           return (
             <button
               key={a}
               onClick={() => setAlbum(a)}
-              className={`relative shrink-0 rounded-full px-5 py-2.5 text-[12px] font-bold transition ${
-                active ? "text-white" : "bg-black/[0.05] text-charcoal hover:bg-black/[0.08]"
+              className={`shrink-0 border-[2.5px] border-black px-5 py-2 text-[11px] font-extrabold tracking-[0.14em] transition ${
+                active ? "bg-black text-white shadow-hardSm" : "bg-white hover:bg-black/5"
               }`}
             >
-              {active && (
-                <motion.span
-                  layoutId="chip"
-                  className="absolute inset-0 rounded-full bg-charcoal"
-                  transition={{ type: "spring", stiffness: 500, damping: 38 }}
-                />
-              )}
-              <span className="relative">{a}</span>
+              {a.toUpperCase()}
             </button>
           );
         })}
@@ -73,11 +59,11 @@ export default function GalleryPage() {
       <AnimatePresence mode="wait">
         <motion.div
           key={album}
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.25 }}
-          className="mt-5"
+          transition={{ duration: 0.22 }}
+          className="mt-4"
         >
           <GalleryGrid photos={photos} onSelect={setIndex} />
         </motion.div>

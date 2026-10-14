@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --ivory: #faf8f5;
-  --charcoal: #131211;
-  --paper: #ececea;
+  --ivory: #fbfcff;
+  --charcoal: #3c4c6e;
+  --paper: #e8eef6;
 }
 
 html {
@@ -20,7 +20,7 @@ body {
 }
 
 ::selection {
-  background: #131211;
+  background: #8e9cbe;
   color: #fff;
 }
 

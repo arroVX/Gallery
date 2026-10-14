@@ -1,11 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ALBUMS, formatDate, type Photo } from "@/lib/gallery";
 import { usePhotos, useUser, type PhotoPatch } from "@/lib/store";
+
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 4;
+
+const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z));
+const clampPan = (p: { x: number; y: number }, zoom: number) => {
+  const max = 140 * (zoom - 1);
+  return {
+    x: Math.min(max, Math.max(-max, p.x)),
+    y: Math.min(max, Math.max(-max, p.y)),
+  };
+};
 
 function EditForm({
   photo,
@@ -104,10 +116,68 @@ export default function PhotoLightbox({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
 
+  // ── Zoom & pan state ──
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinchDist = useRef<number | null>(null);
+  const lastPt = useRef({ x: 0, y: 0 });
+
   useEffect(() => {
     setEditing(false);
     setConfirming(false);
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+    pointers.current.clear();
+    pinchDist.current = null;
   }, [photo?.id]);
+
+  const zoomIn = useCallback(() => {
+    setZoom((z) => {
+      const nz = clampZoom(Math.round((z + 0.5) * 100) / 100);
+      setPan((p) => clampPan(p, nz));
+      return nz;
+    });
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    setZoom((z) => {
+      const nz = clampZoom(Math.round((z - 0.5) * 100) / 100);
+      setPan((p) => clampPan(p, nz));
+      return nz;
+    });
+  }, []);
+
+  const resetZoom = useCallback(() => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }, []);
+
+  const toggleZoom = useCallback(() => {
+    setZoom((z) => {
+      const nz = z > 1.2 ? 1 : 2.5;
+      setPan({ x: 0, y: 0 });
+      return nz;
+    });
+  }, []);
+
+  // Wheel / trackpad zoom (native non-passive listener so we can preventDefault)
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el || index === null) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      setZoom((z) => {
+        const nz = clampZoom(Math.round((z - e.deltaY * 0.003) * 100) / 100);
+        setPan((p) => clampPan(p, nz));
+        return nz;
+      });
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [index, photo?.id]);
 
   useEffect(() => {
     if (index === null) return;
@@ -116,6 +186,9 @@ export default function PhotoLightbox({
       if (!editing) {
         if (e.key === "ArrowLeft") onNav((index - 1 + photos.length) % photos.length);
         if (e.key === "ArrowRight") onNav((index + 1) % photos.length);
+        if (e.key === "+" || e.key === "=") zoomIn();
+        if (e.key === "-") zoomOut();
+        if (e.key === "0") resetZoom();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -124,7 +197,7 @@ export default function PhotoLightbox({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [index, onClose, onNav, photos.length, editing]);
+  }, [index, onClose, onNav, photos.length, editing, zoomIn, zoomOut, resetZoom]);
 
   const prev = () => {
     if (index !== null) onNav((index - 1 + photos.length) % photos.length);
@@ -148,6 +221,54 @@ export default function PhotoLightbox({
     }
   };
 
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // abaikan
+    }
+    if (pointers.current.size === 2) {
+      const [a, b] = Array.from(pointers.current.values());
+      pinchDist.current = Math.hypot(a.x - b.x, a.y - b.y);
+      setDragging(false);
+    } else if (zoom > 1) {
+      lastPt.current = { x: e.clientX, y: e.clientY };
+      setDragging(true);
+    }
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!pointers.current.has(e.pointerId)) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 2) {
+      // pinch zoom
+      const [a, b] = Array.from(pointers.current.values());
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinchDist.current && pinchDist.current > 0) {
+        const factor = dist / pinchDist.current;
+        setZoom((z) => {
+          const nz = clampZoom(Math.round(z * factor * 100) / 100);
+          setPan((p) => clampPan(p, nz));
+          return nz;
+        });
+      }
+      pinchDist.current = dist;
+    } else if (dragging && zoom > 1) {
+      const dx = e.clientX - lastPt.current.x;
+      const dy = e.clientY - lastPt.current.y;
+      lastPt.current = { x: e.clientX, y: e.clientY };
+      setPan((p) => clampPan({ x: p.x + dx, y: p.y + dy }, zoom));
+    }
+  };
+
+  const endPointer = (e: React.PointerEvent<HTMLDivElement>) => {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size < 2) pinchDist.current = null;
+    if (pointers.current.size === 0) setDragging(false);
+  };
+
   return (
     <AnimatePresence>
       {photo && index !== null && (
@@ -164,45 +285,104 @@ export default function PhotoLightbox({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 60, opacity: 0, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="relative max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-t-[24px] bg-white shadow-pop sm:rounded-[24px]"
+            className="relative max-h-[92dvh] w-full max-w-3xl overflow-y-auto border-[3px] border-black bg-white shadow-hard"
           >
             <button
               onClick={onClose}
-              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-[16px] font-bold text-white backdrop-blur transition hover:bg-black"
+              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center border-2 border-black bg-black text-[15px] font-bold text-white transition hover:bg-white hover:text-black"
               aria-label="Tutup"
             >
               ✕
             </button>
             <div className="grid sm:grid-cols-[1.25fr_1fr]">
-              <div className="relative min-h-[320px] overflow-hidden bg-ink sm:min-h-[480px]">
-                <Image
-                  key={photo.id}
-                  src={photo.src}
-                  alt={photo.caption}
-                  width={photo.width}
-                  height={photo.height}
-                  sizes="(max-width: 640px) 100vw, 560px"
-                  className="h-full max-h-[46dvh] w-full object-cover sm:max-h-none sm:min-h-[480px]"
-                  priority
-                />
-                <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-white/15 py-1 pl-1 pr-3 backdrop-blur-md">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[11px] font-extrabold text-charcoal">
-                    {(photo.location || "K").charAt(0)}
-                  </span>
-                  <span className="max-w-[140px] truncate text-[11px] font-bold text-white">
-                    {photo.location || photo.album}
-                  </span>
+              {/* ── Zoomable photo frame ── */}
+              <div
+                ref={frameRef}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={endPointer}
+                onPointerCancel={endPointer}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  toggleZoom();
+                }}
+                style={{ touchAction: zoom > 1 ? "none" : "pan-y" }}
+                className={`relative min-h-[320px] select-none overflow-hidden border-b-[3px] border-black bg-black sm:min-h-[480px] sm:border-b-0 sm:border-r-[3px] ${
+                  zoom === 1 ? "cursor-zoom-in" : dragging ? "cursor-grabbing" : "cursor-grab"
+                }`}
+              >
+                <div
+                  className="h-full w-full"
+                  style={{
+                    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                    transformOrigin: "center center",
+                    transition: dragging ? "none" : "transform 160ms ease-out",
+                  }}
+                >
+                  <Image
+                    key={photo.id}
+                    src={photo.src}
+                    alt={photo.caption}
+                    width={photo.width}
+                    height={photo.height}
+                    sizes="(max-width: 640px) 100vw, 560px"
+                    className="h-full max-h-[46dvh] w-full object-cover sm:max-h-none sm:min-h-[480px]"
+                    priority
+                    draggable={false}
+                  />
                 </div>
+                <div className="absolute left-3 top-3 border-2 border-black bg-white px-3 py-1 text-[10px] font-extrabold tracking-[0.14em]">
+                  {(photo.location || photo.album).toUpperCase()}
+                </div>
+
+                {/* zoom toolbar */}
+                <div
+                  className="absolute bottom-3 right-3 z-10 flex items-stretch border-2 border-black bg-white"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onDoubleClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={zoomOut}
+                    disabled={zoom <= MIN_ZOOM}
+                    className="px-3 py-1.5 text-[14px] font-extrabold disabled:opacity-30"
+                    aria-label="Zoom out"
+                  >
+                    −
+                  </button>
+                  <span className="flex items-center border-x-2 border-black px-2 font-mono text-[11px] font-bold">
+                    {zoom.toFixed(1)}×
+                  </span>
+                  <button
+                    onClick={zoomIn}
+                    disabled={zoom >= MAX_ZOOM}
+                    className="px-3 py-1.5 text-[14px] font-extrabold disabled:opacity-30"
+                    aria-label="Zoom in"
+                  >
+                    +
+                  </button>
+                  {zoom > 1 && (
+                    <button
+                      onClick={resetZoom}
+                      className="border-l-2 border-black bg-black px-2 text-[10px] font-extrabold tracking-widest text-white"
+                      aria-label="Reset zoom"
+                    >
+                      1×
+                    </button>
+                  )}
+                </div>
+                <p className="absolute bottom-3 left-3 border border-white/60 bg-black/70 px-2 py-1 text-[9px] font-bold tracking-[0.14em] text-white">
+                  {zoom > 1 ? "GESER UNTUK JELAJAH" : "KETUK 2× / SCROLL / CUBIT UNTUK ZOOM"}
+                </p>
               </div>
 
               <div className="p-5 sm:p-6">
                 <p className="text-[11px] font-bold tracking-widest text-charcoal/50">
                   {formatDate(photo.takenAt).toUpperCase()} — {photo.album.toUpperCase()}
                 </p>
-                <h3 className="mt-2 text-[26px] font-extrabold leading-[1.05] tracking-tighter">
-                  {photo.caption}
+                <h3 className="mt-2 font-display text-[30px] leading-none tracking-wide">
+                  {photo.caption.toUpperCase()}
                 </h3>
-                <p className="mt-1 text-[13px] font-medium text-charcoal/60">{photo.location}</p>
+                <p className="mt-1 font-serif text-[13px] italic">{photo.location}</p>
 
                 {canWrite ? (
                   <div className="mt-4 flex gap-2">
@@ -211,9 +391,9 @@ export default function PhotoLightbox({
                         setConfirming(false);
                         setEditing((e) => !e);
                       }}
-                      className="flex-1 rounded-full border border-black/15 bg-white py-2.5 text-[13px] font-bold active:scale-[0.98]"
+                      className="flex-1 border-2 border-black bg-white py-2.5 text-[12px] font-extrabold tracking-widest active:translate-x-[2px] active:translate-y-[2px]"
                     >
-                      {editing ? "Tutup edit" : "Edit"}
+                      {editing ? "TUTUP EDIT" : "EDIT"}
                     </button>
                     <button
                       onClick={doDelete}
@@ -246,21 +426,21 @@ export default function PhotoLightbox({
                   />
                 )}
 
-                <div className="mt-5 flex items-center justify-between border-t border-black/[0.07] pt-4">
+                <div className="mt-5 flex items-center justify-between border-t-[3px] border-black pt-4">
                   <button
                     onClick={prev}
-                    className="rounded-full bg-charcoal px-5 py-2.5 text-[13px] font-bold text-white active:scale-95"
+                    className="border-2 border-black bg-black px-5 py-2.5 text-[12px] font-extrabold text-white"
                   >
-                    ← Prev
+                    ← PREV
                   </button>
-                  <p className="font-mono text-[12px] font-bold text-charcoal/50">
+                  <p className="font-mono text-[12px] font-bold">
                     {index + 1} / {photos.length}
                   </p>
                   <button
                     onClick={next}
-                    className="rounded-full bg-charcoal px-5 py-2.5 text-[13px] font-bold text-white active:scale-95"
+                    className="border-2 border-black bg-black px-5 py-2.5 text-[12px] font-extrabold text-white"
                   >
-                    Next →
+                    NEXT →
                   </button>
                 </div>
               </div>

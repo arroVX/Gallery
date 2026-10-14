@@ -14,11 +14,9 @@ export default function GalleryGrid({
 }) {
   if (photos.length === 0) {
     return (
-      <div className="rounded-[20px] border border-dashed border-black/15 bg-black/[0.02] p-10 text-center">
-        <p className="text-[15px] font-extrabold tracking-tight">Belum ada foto</p>
-        <p className="mt-1 text-[13px] font-medium text-charcoal/60">
-          Upload dulu untuk mengisi galeri ini.
-        </p>
+      <div className="border-[3px] border-dashed border-black bg-white p-10 text-center">
+        <p className="font-display text-[22px] tracking-wide">NO PHOTOS YET</p>
+        <p className="mt-1 font-serif text-[13px] italic">Upload dulu untuk mengisi halaman ini.</p>
       </div>
     );
   }
@@ -28,60 +26,38 @@ export default function GalleryGrid({
       {photos.map((p, i) => (
         <motion.figure
           key={p.id}
-          initial={{ opacity: 0, y: 18 }}
+          initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.35, ease: "easeOut", delay: (i % 4) * 0.04 }}
-          className="group relative break-inside-avoid overflow-hidden rounded-[18px] bg-black/[0.04]"
+          transition={{ duration: 0.3, delay: (i % 4) * 0.03 }}
+          className="break-inside-avoid border-[3px] border-black bg-white p-1.5 shadow-hardSm"
         >
           <button
             onClick={() => onSelect(i)}
             className="block w-full text-left"
             aria-label={`Buka foto ${p.caption}`}
           >
-            <div className="relative w-full overflow-hidden">
+            <span className="block border-2 border-black">
               <Image
                 src={p.src}
                 alt={p.caption}
                 width={p.width}
                 height={p.height}
-                sizes="(max-width: 768px) 50vw, 320px"
-                className="h-auto w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                sizes="(max-width: 768px) 50vw, 300px"
+                className="h-auto w-full object-cover"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-black/20 opacity-90" />
-            </div>
-
-            {/* top pill — Artfolio */}
-            <div className="absolute left-2.5 top-2.5 flex items-center gap-1.5 rounded-full bg-white/15 py-1 pl-1 pr-2.5 backdrop-blur-md">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-extrabold text-charcoal">
-                {(p.location || "K").charAt(0)}
+            </span>
+            <span
+              className={`mt-1.5 block border-2 border-black px-2 py-1.5 text-center text-[10.5px] font-extrabold tracking-wide ${
+                i % 3 === 1 ? "bg-white text-black" : "bg-black text-white"
+              }`}
+            >
+              <span className="block truncate">{p.caption.toUpperCase()}</span>
+              <span className={`mt-0.5 block text-[9px] font-bold tracking-[0.14em] ${i % 3 === 1 ? "text-black/60" : "text-white/70"}`}>
+                {formatDate(p.takenAt).toUpperCase()}
               </span>
-              <span className="max-w-[110px] truncate text-[10.5px] font-bold text-white">
-                {p.location || p.album}
-              </span>
-            </div>
-
-            {p.favorite && (
-              <span className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[13px]">
-                ♥
-              </span>
-            )}
-
-            {/* bottom — Artfolio + Luna rounded */}
-            <figcaption className="absolute inset-x-0 bottom-0 p-3">
-              <p className="line-clamp-2 text-[13.5px] font-extrabold leading-tight tracking-tight text-white">
-                {p.caption}
-              </p>
-              <div className="mt-1.5 flex items-center justify-between">
-                <p className="text-[10.5px] font-bold text-white/70">
-                  {formatDate(p.takenAt)}
-                </p>
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[13px] text-charcoal transition group-hover:bg-charcoal group-hover:text-white">
-                  →
-                </span>
-              </div>
-            </figcaption>
+            </span>
           </button>
         </motion.figure>
       ))}

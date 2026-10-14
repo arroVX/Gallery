@@ -5,94 +5,94 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/timeline", label: "Timeline" },
+  { href: "/", label: "HOME" },
+  { href: "/gallery", label: "GALLERY" },
+  { href: "/flipbook", label: "FLIPBOOK" },
+  { href: "/timeline", label: "TIMELINE" },
+  { href: "/upload", label: "UPLOAD" },
 ];
 
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const today = new Date().toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
-    <header className="sticky top-0 z-40 border-b border-black/[0.06] bg-white/85 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 md:px-10">
-        {/* Logo — Noir style */}
-        <Link href="/" className="flex items-center gap-1.5">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-charcoal">
-            <span className="h-1.5 w-1.5 rounded-full bg-white" />
-          </span>
-          <span className="text-[17px] font-extrabold tracking-tight">
-            KITA<span className="text-charcoal">.</span>
-          </span>
+    <header>
+      {/* top dateline */}
+      <div className="flex items-center justify-between border-b-[3px] border-black px-3 py-1.5 text-[10px] font-bold tracking-[0.14em] sm:px-5">
+        <span>★ EST. 2024 — KITA BERDUA</span>
+        <span className="hidden sm:inline">{today.toUpperCase()}</span>
+        <span>EDITION NO. 01</span>
+      </div>
+
+      {/* masthead */}
+      <div className="flex items-center justify-between px-3 py-3 sm:px-5">
+        <Link href="/" className="font-display text-[34px] leading-none tracking-wide sm:text-[44px]">
+          KITA<span className="align-super text-[18px] text-dusty">.</span>
         </Link>
-
-        {/* Center — Luna style */}
-        <p className="hidden text-[11px] font-semibold tracking-wide text-charcoal/60 lg:block">
-          Based in: Memories Since 2024
+        <p className="hidden max-w-[220px] text-right font-serif text-[11px] italic leading-snug md:block">
+          Having a friend is a real privilege and if you forget about them you run the risk.
         </p>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          aria-label="Menu"
+          className="flex h-10 w-10 flex-col items-end justify-center gap-[5px] md:hidden"
+        >
+          <span className="h-[2.5px] w-6 bg-black" />
+          <span className="h-[2.5px] w-4 bg-black" />
+          <span className="h-[2.5px] w-6 bg-black" />
+        </button>
+      </div>
 
-        {/* Desktop nav — Luna style */}
-        <div className="hidden items-center gap-7 md:flex">
-          <nav className="flex items-center gap-6">
+      {/* black navbar — like reference */}
+      <nav className="hidden border-y-[3px] border-black bg-black px-5 py-2.5 md:block">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-7">
             {LINKS.map((l) => {
               const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
               return (
                 <Link
                   key={l.href}
                   href={l.href}
-                  className={`text-[13px] font-semibold transition ${
-                    active ? "text-charcoal" : "text-charcoal/55 hover:text-charcoal"
+                  className={`text-[12px] font-extrabold tracking-[0.18em] text-white transition ${
+                    active ? "underline underline-offset-8" : "opacity-70 hover:opacity-100"
                   }`}
                 >
                   {l.label}
                 </Link>
               );
             })}
-          </nav>
+          </div>
           <Link
-            href="/upload"
-            className="rounded-full bg-charcoal px-4 py-2 text-[12px] font-bold text-white transition hover:bg-black active:scale-95"
+            href="/gallery"
+            className="border border-white bg-white px-4 py-1 text-[10px] font-extrabold tracking-[0.2em] text-black"
           >
-            + Upload
+            SEARCH
           </Link>
         </div>
+      </nav>
 
-        {/* Hamburger — Noir/Luna */}
-        <button
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Menu"
-          className="flex h-10 w-10 flex-col items-end justify-center gap-[5px] md:hidden"
-        >
-          <span className={`h-[2px] bg-charcoal transition-all ${open ? "w-6 -rotate-45 translate-y-[7px]" : "w-6"}`} />
-          <span className={`h-[2px] bg-charcoal transition-all ${open ? "opacity-0" : "w-4"}`} />
-          <span className={`h-[2px] bg-charcoal transition-all ${open ? "w-6 rotate-45 -translate-y-[7px]" : "w-6"}`} />
-        </button>
-      </div>
-
-      {/* Mobile dropdown */}
+      {/* mobile dropdown */}
       {open && (
-        <div className="border-t border-black/[0.06] bg-white px-5 pb-5 pt-3 md:hidden">
-          <nav className="flex flex-col gap-1">
+        <nav className="border-t-[3px] border-black bg-black px-4 py-3 md:hidden">
+          <div className="flex flex-col">
             {LINKS.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-xl px-3 py-3 text-[15px] font-bold tracking-tight hover:bg-black/[0.04]"
+                className="border-b border-white/15 py-3 text-[13px] font-extrabold tracking-[0.2em] text-white last:border-0"
               >
                 {l.label}
               </Link>
             ))}
-            <Link
-              href="/upload"
-              onClick={() => setOpen(false)}
-              className="mt-2 rounded-full bg-charcoal px-4 py-3 text-center text-sm font-bold text-white"
-            >
-              + Upload Foto
-            </Link>
-          </nav>
-        </div>
+          </div>
+        </nav>
       )}
     </header>
   );
