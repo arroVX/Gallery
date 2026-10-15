@@ -5,9 +5,9 @@ import { useDropzone } from "react-dropzone";
 import imageCompression from "browser-image-compression";
 import { motion } from "framer-motion";
 import { ALBUMS } from "@/lib/gallery";
-import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, type User } from "firebase/auth";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { initFirebase, isFirebaseConfigured } from "@/lib/firebase";
 import { useEffect } from "react";
 
 type Pick = { file: File; preview: string };
@@ -113,6 +113,7 @@ export default function UploadPage() {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
+    const { auth } = initFirebase();
     if (!auth) return;
     return onAuthStateChanged(auth, setUser);
   }, []);
@@ -137,6 +138,7 @@ export default function UploadPage() {
   const login = async () => {
     setError(null);
     try {
+      const { auth } = initFirebase();
       if (!auth) return;
       await signInWithEmailAndPassword(auth, email, password);
     } catch (e) {
@@ -149,9 +151,10 @@ export default function UploadPage() {
     setError(null);
     setDone(null);
     if (picks.length === 0) return setError("Pilih minimal 1 foto dulu.");
-    // Diagnostik: tunjukkan kondisi mana yang gagal
     if (!isFirebaseConfigured) return setError("❌ Firebase belum terkonfigurasi — cek env NEXT_PUBLIC_FIREBASE_*");
-    if (!db) return setError("❌ Firestore (db) null — Firebase gagal inisialisasi");
+    // Panggil initFirebase() di sini agar db/auth pasti terinisialisasi di browser.
+    const { db, auth } = initFirebase();
+    if (!db) return setError("❌ Firestore gagal inisialisasi — cek console browser untuk detail error.");
     if (!auth?.currentUser) return setError("❌ Belum login — silakan masuk dulu");
     try {
       let doneCount = 0;
@@ -261,7 +264,7 @@ export default function UploadPage() {
       {isFirebaseConfigured && user && (
         <div className="mt-4 flex items-center justify-between border-[3px] border-black bg-white px-4 py-2.5">
           <p className="text-xs font-bold">{user.email}</p>
-          <button onClick={() => auth && signOut(auth)} className="border-2 border-black px-3 py-1 text-xs font-extrabold">
+          <button onClick={() => { const { auth } = initFirebase(); auth && signOut(auth); }} className="border-2 border-black px-3 py-1 text-xs font-extrabold">
             KELUAR
           </button>
         </div>

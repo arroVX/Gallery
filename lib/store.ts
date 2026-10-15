@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { deleteObject, ref } from "firebase/storage";
-import { auth, db, isFirebaseConfigured, storage } from "./firebase";
+import { firebase, initFirebase, isFirebaseConfigured } from "./firebase";
 import { PHOTOS, TIMELINE, type Photo, type TimelineEvent } from "./gallery";
 
 const asISODate = (v: unknown): string => {
@@ -94,6 +94,7 @@ export type PhotoPatch = Partial<
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
+    const { auth } = initFirebase();
     if (!auth) return;
     return onAuthStateChanged(auth, setUser);
   }, []);
@@ -111,7 +112,12 @@ export function usePhotos() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) return;
+    // initFirebase() di sini memastikan db terinisialisasi di browser, bukan SSR.
+    const { db } = initFirebase();
+    if (!isFirebaseConfigured || !db) {
+      setLoading(false);
+      return;
+    }
     // Sengaja TANPA orderBy server-side: dokumen lama tanpa `uploadedAt`
     // akan hilang jika pakai orderBy("uploadedAt"). Sorting dilakukan client-side.
     const q = query(collection(db, "photos"), limit(200));
@@ -143,8 +149,8 @@ export function usePhotos() {
       const { favorite, ...rest } = patch;
       const fsPatch: Record<string, unknown> = { ...rest };
       if (favorite !== undefined) fsPatch.isFavorite = favorite;
-      if (live && db) {
-        await updateDoc(doc(db, "photos", id), fsPatch);
+      if (live && firebase.db) {
+        await updateDoc(doc(firebase.db, "photos", id), fsPatch);
       }
       // Update optimis lokal agar UI langsung berubah.
       setPhotos((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
@@ -155,14 +161,14 @@ export function usePhotos() {
   const removePhoto = useCallback(
     async (id: string) => {
       const target = photos.find((p) => p.id === id);
-      if (live && db) {
-        await deleteDoc(doc(db, "photos", id));
+      if (live && firebase.db) {
+        await deleteDoc(doc(firebase.db, "photos", id));
         // Dokumen lama (Firebase Storage): hapus file binernya juga.
         // Dokumen Cloudinary: file tetap ada di Media Library (delete butuh
         // signed API) — hapus manual di Cloudinary jika perlu.
-        if (target?.storagePath && storage) {
+        if (target?.storagePath && firebase.storage) {
           try {
-            await deleteObject(ref(storage, target.storagePath));
+            await deleteObject(ref(firebase.storage, target.storagePath));
           } catch {
             // file mungkin sudah tidak ada — abaikan
           }
@@ -183,6 +189,8 @@ export function useTimeline() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // initFirebase() di sini memastikan db terinisialisasi di browser, bukan SSR.
+    const { db } = initFirebase();
     if (!isFirebaseConfigured || !db) return;
     const q = query(collection(db, "timeline_events"), limit(100));
     const unsub = onSnapshot(
@@ -217,6 +225,7 @@ export type MemoryInput = {
 // Tulis 1 memory card (multi-foto) ke `timeline_events`.
 // Rules create wajib: date, title, order.
 export async function addMemory(input: MemoryInput): Promise<string> {
+  const { db } = initFirebase();
   if (!db) throw new Error("Firestore belum siap.");
   const ref = await addDoc(collection(db, "timeline_events"), {
     title: input.title,
@@ -230,6 +239,7 @@ export async function addMemory(input: MemoryInput): Promise<string> {
 }
 
 export async function removeMemory(id: string): Promise<void> {
+  const { db } = initFirebase();
   if (!db) throw new Error("Firestore belum siap.");
   await deleteDoc(doc(db, "timeline_events", id));
 }

@@ -16,47 +16,70 @@ export const isFirebaseConfigured = Boolean(
   config.apiKey && config.projectId && config.appId && config.storageBucket
 );
 
-let app: FirebaseApp | null = null;
-let auth: Auth | null = null;
-let db: Firestore | null = null;
-let storage: FirebaseStorage | null = null;
+// Objek tunggal yang bisa di-mutate — solusi untuk masalah
+// destructured import kehilangan live binding setelah lazy init.
+export const firebase = {
+  app: null as FirebaseApp | null,
+  auth: null as Auth | null,
+  db: null as Firestore | null,
+  storage: null as FirebaseStorage | null,
+};
 
-if (isFirebaseConfigured) {
+let _ready = false;
+
+/**
+ * Inisialisasi Firebase — idempotent, aman dipanggil berkali-kali.
+ *
+ * ROOT CAUSE FIX: Dulu db/storage di-init di module-level dengan guard
+ * `typeof window !== "undefined"`. Di Next.js, modul dievaluasi di SERVER
+ * saat SSR → window belum ada → db = null. Nilai null ter-cache, sehingga
+ * saat client component berjalan di browser, `import { db }` tetap null.
+ *
+ * Solusi: panggil initFirebase() di dalam useEffect / event handler
+ * (yang selalu berjalan di browser, bukan server), lalu akses via
+ * `firebase.db`, bukan destructured `db`.
+ */
+export function initFirebase(): typeof firebase {
+  if (_ready) return firebase;
+  if (!isFirebaseConfigured) return firebase;
+
   try {
-    app = getApps().length ? getApps()[0]! : initializeApp(config as Record<string, string>);
+    firebase.app = getApps().length
+      ? getApps()[0]!
+      : initializeApp(config as Record<string, string>);
   } catch (err) {
-    console.error("[Firebase] Gagal initializeApp:", err);
+    console.error("[Firebase] initializeApp gagal:", err);
+    return firebase;
   }
-  // Auth: aman di server & client.
-  if (app) {
-    try {
-      auth = getAuth(app);
-    } catch (err) {
-      console.error("[Firebase] Gagal getAuth:", err);
-    }
+
+  try {
+    firebase.auth = getAuth(firebase.app);
+  } catch (err) {
+    console.error("[Firebase] getAuth gagal:", err);
   }
-  // Firestore & Storage hanya di browser. Saat `next build` (prerender server)
-  // SDK web melempar "Service firestore is not available" — bukan error asli.
-  if (app && typeof window !== "undefined") {
-    try {
-      db = getFirestore(app);
-    } catch (err) {
-      console.error("[Firebase] Gagal getFirestore:", err);
-    }
-    try {
-      // Pastikan prefix gs:// hanya ditambah jika belum ada.
-      // storageBucket dari env bisa berupa "xxx.appspot.com" atau
-      // "xxx.firebasestorage.app" — keduanya valid tanpa prefix di config,
-      // tapi getStorage() butuh URI gs://bucket-name jika dieksplisit.
-      const bucketVal = config.storageBucket ?? "";
-      const bucketUri = bucketVal.startsWith("gs://")
-        ? bucketVal
-        : `gs://${bucketVal}`;
-      storage = getStorage(app, bucketUri);
-    } catch (err) {
-      console.error("[Firebase] Gagal getStorage:", err);
-    }
+
+  try {
+    firebase.db = getFirestore(firebase.app);
+  } catch (err) {
+    console.error("[Firebase] getFirestore gagal:", err);
   }
+
+  try {
+    const bucket = config.storageBucket ?? "";
+    const uri = bucket.startsWith("gs://") ? bucket : `gs://${bucket}`;
+    firebase.storage = getStorage(firebase.app, uri);
+  } catch (err) {
+    console.error("[Firebase] getStorage gagal:", err);
+  }
+
+  _ready = true;
+  return firebase;
 }
 
-export { app, auth, db, storage };
+// Ekspor langsung untuk backward-compat di tempat yang membaca di browser
+// (upload/page.tsx, store.ts). Nilai akan null di SSR — gunakan initFirebase()
+// di useEffect sebelum akses.
+export const app = firebase.app;
+export const auth = firebase.auth;
+export const db = firebase.db;
+export const storage = firebase.storage;
