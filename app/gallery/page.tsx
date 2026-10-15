@@ -10,7 +10,7 @@ import PhotoLightbox from "@/components/PhotoLightbox";
 export default function GalleryPage() {
   const [album, setAlbum] = useState<(typeof ALBUMS)[number]>("Semua");
   const [index, setIndex] = useState<number | null>(null);
-  const { photos: all, live, loading } = usePhotos();
+  const { photos: all, live, loading, error } = usePhotos();
 
   const photos = useMemo(
     () => (album === "Semua" ? all : all.filter((p) => p.album === album)),
@@ -55,6 +55,12 @@ export default function GalleryPage() {
           );
         })}
       </div>
+
+      {error && (
+        <p className="mt-4 border-2 border-red-600 bg-red-50 p-3 text-[13px] font-bold text-red-800">
+          {error}
+        </p>
+      )}
 
       {loading ? (
         <div className="mt-10 flex flex-col items-center gap-3">

@@ -24,13 +24,32 @@ let storage: FirebaseStorage | null = null;
 if (isFirebaseConfigured) {
   try {
     app = getApps().length ? getApps()[0]! : initializeApp(config as Record<string, string>);
-    auth = getAuth(app);
-    db = getFirestore(app);
-    // Inisialisasi storage dengan URL bucket eksplisit agar support
-    // domain baru (*.firebasestorage.app) maupun lama (*.appspot.com)
-    storage = getStorage(app, `gs://${config.storageBucket}`);
   } catch (err) {
-    console.error("[Firebase] Gagal inisialisasi:", err);
+    console.error("[Firebase] Gagal initializeApp:", err);
+  }
+  // Auth: aman di server & client.
+  if (app) {
+    try {
+      auth = getAuth(app);
+    } catch (err) {
+      console.error("[Firebase] Gagal getAuth:", err);
+    }
+  }
+  // Firestore & Storage hanya di browser. Saat `next build` (prerender server)
+  // SDK web melempar "Service firestore is not available" — bukan error asli.
+  if (app && typeof window !== "undefined") {
+    try {
+      db = getFirestore(app);
+    } catch (err) {
+      console.error("[Firebase] Gagal getFirestore:", err);
+    }
+    try {
+      // URL bucket eksplisit agar support domain baru (*.firebasestorage.app)
+      // maupun lama (*.appspot.com).
+      storage = getStorage(app, `gs://${config.storageBucket}`);
+    } catch (err) {
+      console.error("[Firebase] Gagal getStorage:", err);
+    }
   }
 }
 

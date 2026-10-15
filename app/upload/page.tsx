@@ -8,10 +8,40 @@ import { ALBUMS } from "@/lib/gallery";
 import { auth, db, isFirebaseConfigured, storage } from "@/lib/firebase";
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, type User } from "firebase/auth";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { useEffect } from "react";
 
 type Pick = { file: File; preview: string };
+
+// Ubah kode error Firebase menjadi pesan yang bisa ditindaklanjuti user.
+const friendlyError = (err: unknown): string => {
+  const code = (err as { code?: string })?.code ?? "";
+  const raw = err instanceof Error ? err.message : String(err);
+  if (code === "storage/unauthorized" || code === "permission-denied")
+    return `Izin ditolak (${code}). Pastikan sudah login DAN rules sudah di-deploy (firebase deploy --only firestore:rules,storage). Detail: ${raw}`;
+  if (code === "storage/unauthenticated" || code === "unauthenticated")
+    return `Belum login (${code}). Masuk dulu dengan akun yang terdaftar di Authentication. Detail: ${raw}`;
+  if (code === "storage/bucket-not-found" || code === "storage/project-not-found")
+    return `Bucket Storage tidak ditemukan (${code}). Cek NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET dan pastikan Storage sudah diaktifkan (Get started) di Console. Detail: ${raw}`;
+  if (code === "storage/quota-exceeded" || code === "storage/retry-limit-exceeded")
+    return `Kuota / jaringan Storage bermasalah (${code}). Coba lagi atau cek billing. Detail: ${raw}`;
+  if (code === "storage/canceled")
+    return "Upload dibatalkan. Coba lagi.";
+  if (code === "auth/operation-not-allowed")
+    return "Login gagal (auth/operation-not-allowed). Aktifkan Email/Password di Console > Authentication > Sign-in method.";
+  if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential")
+    return "Login gagal. Email tidak terdaftar atau kata sandi salah.";
+  if (code === "auth/too-many-requests")
+    return "Terlalu banyak percobaan login. Tunggu sebentar lalu coba lagi.";
+  if (code === "failed-precondition")
+    return `Firestore butuh index (failed-precondition). Klik link index di console browser. Detail: ${raw}`;
+  if (code === "unavailable")
+    return "Firestore/Storage tidak dapat dijangkau (unavailable). Pastikan database sudah dibuat dan koneksi stabil.";
+  return `Upload gagal: ${raw}`;
+};
+
+const sanitizeName = (name: string) =>
+  name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80) || "foto.jpg";
 
 export default function UploadPage() {
   const [picks, setPicks] = useState<Pick[]>([]);
@@ -54,7 +84,8 @@ export default function UploadPage() {
       if (!auth) return;
       await signInWithEmailAndPassword(auth, email, password);
     } catch (e) {
-      setError("Gagal masuk. Cek email & kata sandi.");
+      console.error("[Auth] login error:", e);
+      setError(friendlyError(e));
     }
   };
 
@@ -85,9 +116,13 @@ export default function UploadPage() {
         } catch {
           // abaikan, pakai default
         }
-        const path = `photos/${takenAt.slice(0, 7)}/${Date.now()}-${file.name}`;
+        // Pakai tipe asli hasil kompresi (bukan hardcode jpeg) agar lolos
+        // storage.rules `image/.*` dan tidak merusak PNG/WebP.
+        const contentType = compressed.type || file.type || "image/jpeg";
+        const safeName = sanitizeName(file.name);
+        const path = `photos/${takenAt.slice(0, 7)}/${Date.now()}-${safeName}`;
         const r = ref(storage, path);
-        const task = uploadBytesResumable(r, compressed, { contentType: "image/jpeg" });
+        const task = uploadBytesResumable(r, compressed, { contentType });
         const url: string = await new Promise((resolve, reject) => {
           task.on(
             "state_changed",
@@ -98,21 +133,38 @@ export default function UploadPage() {
                 )
               ),
             reject,
-            async () => resolve(await getDownloadURL(task.snapshot.ref))
+            async () => {
+              try {
+                resolve(await getDownloadURL(task.snapshot.ref));
+              } catch (e) {
+                reject(e);
+              }
+            }
           );
         });
-        await addDoc(collection(db, "photos"), {
-          imageUrl: url,
-          storagePath: path,
-          width,
-          height,
-          caption: caption || file.name,
-          location,
-          takenAt,
-          album,
-          uploadedAt: serverTimestamp(),
-          isFavorite: false,
-        });
+        try {
+          await addDoc(collection(db, "photos"), {
+            imageUrl: url,
+            storagePath: path,
+            width,
+            height,
+            caption: caption || file.name,
+            location,
+            takenAt,
+            album,
+            uploadedAt: serverTimestamp(),
+            isFavorite: false,
+          });
+        } catch (e) {
+          // addDoc gagal setelah file terupload -> hapus file yatim agar
+          // bucket tidak penuh file yang tidak tampil di galeri.
+          try {
+            await deleteObject(r);
+          } catch {
+            // abaikan, file yatim bisa dihapus manual
+          }
+          throw e;
+        }
         doneCount++;
       }
       setProgress(null);
@@ -121,8 +173,8 @@ export default function UploadPage() {
       setCaption("");
     } catch (err: unknown) {
       setProgress(null);
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(`Upload gagal: ${msg}`);
+      console.error("[Upload] gagal:", err);
+      setError(friendlyError(err));
     }
   };
 

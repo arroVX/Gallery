@@ -11,7 +11,7 @@ export default function TimelineView() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.7", "end 0.6"] });
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 24 });
-  const events = useTimeline();
+  const { events, error } = useTimeline();
   const { photos } = usePhotos();
 
   const coverOf = (coverId: string) =>
@@ -24,6 +24,17 @@ export default function TimelineView() {
         style={{ scaleY: progress }}
         className="absolute bottom-2 left-[9px] top-2 w-[3px] origin-top bg-black"
       />
+      {error && (
+        <p className="mb-4 border-2 border-red-600 bg-red-50 p-3 text-[13px] font-bold text-red-800">
+          {error}
+        </p>
+      )}
+      {events.length === 0 && !error && (
+        <div className="border-[3px] border-dashed border-black bg-white p-8 text-center">
+          <p className="font-display text-[20px] tracking-wide">BELUM ADA CERITA</p>
+          <p className="mt-1 font-serif text-[12px] italic">Upload foto dulu untuk mengisi timeline.</p>
+        </div>
+      )}
       <div className="space-y-5">
         {events.map((ev, i) => {
           const cover = coverOf(ev.coverId);
