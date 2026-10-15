@@ -44,14 +44,17 @@ export default function MemoryCard({
       <button onClick={onOpen} className="block w-full p-2 text-left" aria-label={`Buka ${event.title}`}>
         {cover ? (
           <div className="overflow-hidden">
-            {/* Foto utama full-width, rasio 4:3 seperti referensi */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden border-2 border-black bg-black/10">
+            {/* Foto utama full-width, tinggi fix (bukan aspect-ratio + fill)
+                agar tidak pernah melar jadi raksasa kalau CSS aspect-ratio
+                gagal / img tidak absolute di WebView HP. */}
+            <div className="overflow-hidden border-2 border-black bg-black/10">
               <Image
                 src={thumb(cover.src, 800, cover.rotate ?? 0)}
                 alt={event.title}
-                fill
+                width={cover.width || 800}
+                height={cover.height || 600}
                 sizes="(max-width: 768px) 90vw, 560px"
-                className="object-cover"
+                className="h-52 w-full object-cover sm:h-56"
                 loading="lazy"
               />
             </div>
@@ -60,14 +63,15 @@ export default function MemoryCard({
                 {rest.map((p, i) => (
                   <span
                     key={p.id}
-                    className="relative block aspect-square w-full overflow-hidden border-2 border-black bg-black/10"
+                    className="relative block h-16 w-full overflow-hidden border-2 border-black bg-black/10 sm:h-20"
                   >
                     <Image
                       src={thumb(p.src, 300, p.rotate ?? 0)}
                       alt={p.caption ?? "foto"}
-                      fill
+                      width={p.width || 400}
+                      height={p.height || 400}
                       sizes="(max-width: 768px) 28vw, 180px"
-                      className="object-cover"
+                      className="h-full w-full object-cover"
                       loading="lazy"
                     />
                     {i === rest.length - 1 && extra > 0 && (
