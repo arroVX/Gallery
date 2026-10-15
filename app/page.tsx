@@ -50,7 +50,7 @@ export default function Home() {
               width={hero.width}
               height={hero.height}
               sizes="(max-width: 768px) 100vw, 480px"
-              className="h-auto max-h-[520px] w-full object-cover"
+              className="h-auto max-h-[520px] w-full bg-black/10 object-cover object-top"
               priority
             />
           </motion.div>
@@ -107,14 +107,14 @@ export default function Home() {
               className="block w-full border-[3px] border-black bg-white p-1 shadow-hardSm sm:p-1.5"
               aria-label={`Buka ${p.caption}`}
             >
-              <span className="block border-2 border-black">
+              <span className="block border-2 border-black bg-black/10">
                 <Image
                   src={p.src}
                   alt={p.caption}
                   width={p.width}
                   height={p.height}
                   sizes="(max-width: 768px) 30vw, 280px"
-                  className="aspect-[3/4] w-full object-cover"
+                  className="aspect-[3/4] w-full object-cover object-top"
                   loading="lazy"
                 />
               </span>
@@ -178,7 +178,7 @@ export default function Home() {
 
         {/* right big photo, thick frame */}
         <div className="border-[3px] border-black bg-black p-2 shadow-hardSm">
-          <div className="border-2 border-white">
+          <div className="border-2 border-white bg-black/10">
             {bottom && (
               <Image
                 src={bottom.src}
@@ -186,7 +186,7 @@ export default function Home() {
                 width={bottom.width}
                 height={bottom.height}
                 sizes="(max-width: 768px) 100vw, 480px"
-                className="h-auto max-h-[460px] w-full object-cover"
+                className="h-auto max-h-[460px] w-full object-cover object-top"
                 loading="lazy"
               />
             )}

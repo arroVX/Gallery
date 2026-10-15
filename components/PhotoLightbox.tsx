@@ -359,7 +359,7 @@ export default function PhotoLightbox({
                   <button
                     onClick={zoomOut}
                     disabled={zoom <= MIN_ZOOM}
-                    className="px-3 py-1.5 text-[14px] font-extrabold disabled:opacity-30"
+                    className="px-2 py-1.5 text-[14px] font-extrabold disabled:opacity-30 sm:px-3"
                     aria-label="Zoom out"
                   >
                     −
@@ -370,14 +370,14 @@ export default function PhotoLightbox({
                   <button
                     onClick={zoomIn}
                     disabled={zoom >= MAX_ZOOM}
-                    className="px-3 py-1.5 text-[14px] font-extrabold disabled:opacity-30"
+                    className="px-2 py-1.5 text-[14px] font-extrabold disabled:opacity-30 sm:px-3"
                     aria-label="Zoom in"
                   >
                     +
                   </button>
                   <button
                     onClick={rotate}
-                    className="border-l-2 border-black px-2.5 py-1.5 text-[14px] font-extrabold"
+                    className="border-l-2 border-black px-2 py-1.5 text-[14px] font-extrabold sm:px-2.5"
                     aria-label="Putar 90 derajat"
                     title="Putar"
                   >
@@ -385,7 +385,7 @@ export default function PhotoLightbox({
                   </button>
                   <button
                     onClick={() => setFocus((f) => !f)}
-                    className="border-l-2 border-black bg-black px-2.5 py-1.5 text-[12px] font-extrabold text-white"
+                    className="border-l-2 border-black bg-black px-2 py-1.5 text-[12px] font-extrabold text-white sm:px-2.5"
                     aria-label="Mode foto penuh"
                     title="Foto penuh"
                   >
@@ -401,7 +401,7 @@ export default function PhotoLightbox({
                     </button>
                   )}
                 </div>
-                <p className="absolute bottom-3 left-3 border border-white/60 bg-black/70 px-2 py-1 text-[9px] font-bold tracking-[0.14em] text-white">
+                <p className="absolute bottom-3 left-3 hidden border border-white/60 bg-black/70 px-2 py-1 text-[9px] font-bold tracking-[0.14em] text-white sm:block">
                   {zoom > 1 ? "GESER UNTUK JELAJAH" : "KETUK 2× / CUBIT: ZOOM • ⟳: PUTAR"}
                 </p>
                 {focus && (

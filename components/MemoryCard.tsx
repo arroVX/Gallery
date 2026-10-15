@@ -36,29 +36,29 @@ export default function MemoryCard({
     <article className="border-[3px] border-black bg-white shadow-hardSm">
       <button onClick={onOpen} className="block w-full p-2 text-left" aria-label={`Buka ${event.title}`}>
         {cover ? (
-          <div className="grid grid-cols-5 gap-1.5">
-            <span className="relative col-span-3 block overflow-hidden border-2 border-black">
+          <div className="grid h-44 grid-cols-5 gap-1.5 sm:h-56">
+            <span className="relative col-span-3 block h-full overflow-hidden border-2 border-black bg-black/10">
               <Image
                 src={thumb(cover.src, 600)}
                 alt={event.title}
                 width={cover.width}
                 height={cover.height}
                 sizes="(max-width: 768px) 60vw, 360px"
-                className="h-44 w-full object-cover sm:h-56"
+                className="h-full w-full object-cover"
                 loading="lazy"
               />
             </span>
-            <span className="col-span-2 grid grid-rows-2 gap-1.5">
+            <span className="col-span-2 grid h-full grid-rows-2 gap-1.5">
               {rest.length > 0 ? (
                 rest.slice(0, 2).map((p, i) => (
-                  <span key={p.id} className="relative block overflow-hidden border-2 border-black">
+                  <span key={p.id} className="relative block h-full min-h-0 overflow-hidden border-2 border-black bg-black/10">
                     <Image
                       src={thumb(p.src, 300)}
                       alt={p.caption}
                       width={p.width}
                       height={p.height}
                       sizes="(max-width: 768px) 35vw, 220px"
-                      className="h-[86px] w-full object-cover sm:h-[108px]"
+                      className="h-full w-full object-cover"
                       loading="lazy"
                     />
                     {i === 1 && extra > 0 && (
@@ -69,7 +69,7 @@ export default function MemoryCard({
                   </span>
                 ))
               ) : (
-                <span className="flex items-center justify-center border-2 border-dashed border-black/40 p-2 text-center font-serif text-[11px] italic">
+                <span className="flex h-full items-center justify-center border-2 border-dashed border-black/40 p-2 text-center font-serif text-[11px] italic">
                   {photos.length} foto di momen ini
                 </span>
               )}

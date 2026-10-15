@@ -24,7 +24,7 @@ export default function BottomNav() {
             <Link
               key={t.href}
               href={t.href}
-              className={`border-r-2 border-white/20 py-2.5 text-center text-[9px] font-extrabold tracking-[0.1em] last:border-r-0 ${
+              className={`min-w-0 truncate border-r-2 border-white/20 px-0.5 py-2 text-center text-[8px] font-extrabold tracking-[0.06em] last:border-r-0 ${
                 active ? "bg-white text-black" : "text-white/70"
               }`}
             >

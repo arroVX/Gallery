@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { formatDate, type Photo } from "@/lib/gallery";
 
 const START = new Date("2024-02-14T00:00:00");
@@ -155,6 +155,19 @@ function PageFace({ page }: { page: Page }) {
   );
 }
 
+// HP (<sm): 1 halaman per layar. Dipakai client-only agar tidak merusak SSR.
+function useSinglePage() {
+  const [single, setSingle] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const apply = () => setSingle(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+  return single;
+}
+
 export default function Flipbook({ photos }: { photos: Photo[] }) {
   const pages: Page[] = useMemo(() => {
     const list: Page[] = [{ kind: "cover" }];
@@ -169,14 +182,25 @@ export default function Flipbook({ photos }: { photos: Photo[] }) {
   const total = pages.length;
   const sheets = Math.ceil(total / 2);
   const sheet = Math.floor(pos / 2);
+  const single = useSinglePage();
+  const step = single ? 1 : 2;
+
+  // Kembali ke halaman genap saat pindah ke mode spread desktop.
+  useEffect(() => {
+    if (!single) setPos((p) => (p % 2 === 1 ? Math.max(p - 1, 0) : p));
+  }, [single]);
 
   const canPrev = pos > 0 && !flip;
-  const canNext = pos + 2 < total && !flip;
+  const canNext = pos + step < total && !flip;
   const goNext = () => {
-    if (canNext) setFlip({ dir: "next" });
+    if (!canNext) return;
+    if (single) setPos((p) => Math.min(p + 1, total - 1));
+    else setFlip({ dir: "next" });
   };
   const goPrev = () => {
-    if (canPrev) setFlip({ dir: "prev" });
+    if (!canPrev) return;
+    if (single) setPos((p) => Math.max(p - 1, 0));
+    else setFlip({ dir: "prev" });
   };
 
   useEffect(() => {
@@ -187,13 +211,86 @@ export default function Flipbook({ photos }: { photos: Photo[] }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pos, flip, total]);
+  }, [pos, flip, total, single]);
 
   if (photos.length === 0) {
     return (
       <div className="border-[3px] border-black bg-white p-10 text-center">
         <p className="font-display text-[22px] tracking-wide">BOOK MASIH KOSONG</p>
         <p className="mt-1 font-serif text-[13px] italic">Upload foto dulu untuk mengisi flipbook.</p>
+      </div>
+    );
+  }
+
+  // ── Mode HP: 1 halaman per layar (geser, tanpa animasi lembar) ──
+  if (single) {
+    return (
+      <div>
+        <div className="relative mx-auto max-w-3xl border-[3px] border-black bg-white shadow-hard">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pos}
+              initial={{ opacity: 0, x: 48 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -48 }}
+              transition={{ duration: 0.22 }}
+              className="relative h-[62dvh]"
+            >
+              <PageFace page={pages[pos]} />
+              {canPrev && (
+                <button
+                  onClick={goPrev}
+                  aria-label="Halaman sebelumnya"
+                  className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-black bg-white text-[18px] font-extrabold"
+                >
+                  ‹
+                </button>
+              )}
+              {canNext && (
+                <button
+                  onClick={goNext}
+                  aria-label="Halaman berikutnya"
+                  className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-black bg-white text-[18px] font-extrabold"
+                >
+                  ›
+                </button>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="mx-auto mt-4 flex max-w-3xl items-center justify-between gap-2">
+          <button
+            onClick={goPrev}
+            disabled={!canPrev}
+            className="border-[3px] border-black bg-white px-5 py-2.5 text-[12px] font-extrabold tracking-[0.14em] shadow-hardSm disabled:opacity-30"
+          >
+            ← PREV
+          </button>
+          <div className="flex max-w-[36vw] items-center gap-1.5 overflow-hidden">
+            {Array.from({ length: total }).map((_, i) =>
+              Math.abs(i - pos) > 4 ? null : (
+                <span
+                  key={i}
+                  className={`block h-2.5 w-2.5 shrink-0 border-2 border-black ${i === pos ? "bg-black" : "bg-white"}`}
+                />
+              )
+            )}
+          </div>
+          <button
+            onClick={goNext}
+            disabled={!canNext}
+            className="border-[3px] border-black bg-black px-5 py-2.5 text-[12px] font-extrabold tracking-[0.14em] text-white shadow-hardSm disabled:opacity-30"
+          >
+            NEXT →
+          </button>
+        </div>
+        <p className="mt-2 text-center font-mono text-[11px] font-bold tracking-[0.14em]">
+          HAL {pos + 1} / {total}
+        </p>
+        <p className="mt-1 text-center font-serif text-[11.5px] italic opacity-70">
+          Ketuk panah tepi / tombol untuk pindah halaman
+        </p>
       </div>
     );
   }
@@ -283,13 +380,15 @@ export default function Flipbook({ photos }: { photos: Photo[] }) {
         >
           ← PREV
         </button>
-        <div className="flex items-center gap-1.5">
-          {Array.from({ length: sheets }).map((_, i) => (
-            <span
-              key={i}
-              className={`block h-2.5 w-2.5 border-2 border-black ${i === sheet ? "bg-black" : "bg-white"}`}
-            />
-          ))}
+        <div className="flex max-w-[30vw] items-center gap-1.5 overflow-hidden sm:max-w-none">
+          {Array.from({ length: sheets }).map((_, i) =>
+            Math.abs(i - sheet) > 4 ? null : (
+              <span
+                key={i}
+                className={`block h-2.5 w-2.5 shrink-0 border-2 border-black ${i === sheet ? "bg-black" : "bg-white"}`}
+              />
+            )
+          )}
         </div>
         <button
           onClick={goNext}

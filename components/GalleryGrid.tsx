@@ -38,7 +38,7 @@ export default function GalleryGrid({
             className="block w-full text-left"
             aria-label={`Buka foto ${p.caption}`}
           >
-            <span className="block border-2 border-black">
+            <span className="block border-2 border-black bg-black/10">
               <Image
                 src={thumb(p.src)}
                 alt={p.caption}
