@@ -93,7 +93,7 @@ export default function MemoriesPage() {
 
       <PhotoLightbox photos={openPhotos} index={index} onClose={close} onNav={setIndex} />
 
-      <p className="mt-6 text-center font-mono text-[9px] opacity-40">build mc7</p>
+      <p className="mt-6 text-center font-mono text-[9px] opacity-40">build mc8</p>
     </main>
   );
 }

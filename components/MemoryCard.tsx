@@ -31,7 +31,7 @@ export default function MemoryCard({
   num?: number;
 }) {
   const cover = photos.find((p) => p.id === event.coverId) ?? photos[0];
-  const rest = photos.filter((p) => p.id !== cover?.id).slice(0, 3);
+  const rest = photos.filter((p) => p.id !== cover?.id).slice(0, 2);
   const extra = photos.length - 1 - rest.length;
 
   return (
@@ -44,39 +44,84 @@ export default function MemoryCard({
       <button onClick={onOpen} className="block w-full min-w-0 p-2 text-left" aria-label={`Buka ${event.title}`}>
         {cover ? (
           <div className="w-full min-w-0 overflow-hidden">
-            {/* Foto utama full-width rasio 4:3 proporsional */}
-            <div className="relative aspect-[4/3] w-full min-w-0 overflow-hidden border-2 border-black bg-black/10">
-              <Image
-                src={thumb(cover.src, 800, cover.rotate ?? 0)}
-                alt={event.title}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 480px"
-                className="object-cover"
-                loading="lazy"
-              />
-            </div>
-            {rest.length > 0 && (
-              <div className="mt-1.5 grid grid-cols-3 gap-1.5">
-                {rest.map((p, i) => (
-                  <span
-                    key={p.id}
-                    className="relative block aspect-square w-full min-w-0 overflow-hidden border-2 border-black bg-black/10"
-                  >
+            {rest.length === 0 ? (
+              /* 1 foto: cover tunggal */
+              <div className="relative aspect-[4/3] w-full min-w-0 overflow-hidden border-2 border-black bg-black/10">
+                <Image
+                  src={thumb(cover.src, 800, cover.rotate ?? 0)}
+                  alt={event.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 480px"
+                  className="object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ) : rest.length === 1 ? (
+              /* 2 foto: 2 kolom sejajar */
+              <div className="grid grid-cols-2 gap-1.5">
+                <div className="relative aspect-square w-full min-w-0 overflow-hidden border-2 border-black bg-black/10">
+                  <Image
+                    src={thumb(cover.src, 600, cover.rotate ?? 0)}
+                    alt={event.title}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 240px"
+                    className="object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="relative aspect-square w-full min-w-0 overflow-hidden border-2 border-black bg-black/10">
+                  <Image
+                    src={thumb(rest[0].src, 600, rest[0].rotate ?? 0)}
+                    alt={rest[0].caption ?? "foto"}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 240px"
+                    className="object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            ) : (
+              /* 3+ foto: layout persis referensi (kiri 1 foto tinggi, kanan 2 foto bertumpuk) */
+              <div className="grid grid-cols-[1.6fr_1fr] gap-1.5">
+                {/* Foto kiri (tinggi otomatis mengikuti kanan) */}
+                <div className="relative w-full min-w-0 overflow-hidden border-2 border-black bg-black/10">
+                  <Image
+                    src={thumb(cover.src, 800, cover.rotate ?? 0)}
+                    alt={event.title}
+                    fill
+                    sizes="(max-width: 640px) 60vw, 300px"
+                    className="object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                {/* Kolom kanan: 2 foto bertumpuk */}
+                <div className="flex flex-col gap-1.5">
+                  <div className="relative aspect-[4/3] w-full min-w-0 overflow-hidden border-2 border-black bg-black/10">
                     <Image
-                      src={thumb(p.src, 300, p.rotate ?? 0)}
-                      alt={p.caption ?? "foto"}
+                      src={thumb(rest[0].src, 400, rest[0].rotate ?? 0)}
+                      alt={rest[0].caption ?? "foto"}
                       fill
-                      sizes="(max-width: 640px) 30vw, 150px"
+                      sizes="(max-width: 640px) 40vw, 180px"
                       className="object-cover"
                       loading="lazy"
                     />
-                    {i === rest.length - 1 && extra > 0 && (
+                  </div>
+                  <div className="relative aspect-[4/3] w-full min-w-0 overflow-hidden border-2 border-black bg-black/10">
+                    <Image
+                      src={thumb(rest[1].src, 400, rest[1].rotate ?? 0)}
+                      alt={rest[1].caption ?? "foto"}
+                      fill
+                      sizes="(max-width: 640px) 40vw, 180px"
+                      className="object-cover"
+                      loading="lazy"
+                    />
+                    {extra > 0 && (
                       <span className="absolute inset-0 flex items-center justify-center bg-black/55 font-display text-[18px] text-white">
                         +{extra}
                       </span>
                     )}
-                  </span>
-                ))}
+                  </div>
+                </div>
               </div>
             )}
           </div>
