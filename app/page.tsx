@@ -37,7 +37,8 @@ export default function Home() {
       {/* ── FRONT PAGE TOP: hero + NEW UPDATE ── */}
       <section className="grid border-[3px] border-black bg-white md:grid-cols-2">
         {/* left big photo */}
-        <div className="border-b-[3px] border-black p-2 md:border-b-0 md:border-r-[3px]">
+        <div className="relative border-b-[3px] border-black p-2 md:border-b-0 md:border-r-[3px]">
+          <span aria-hidden className="tape absolute left-1/2 top-0 z-10 h-6 w-24 -translate-x-1/2 -rotate-2" />
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -54,14 +55,14 @@ export default function Home() {
               priority
             />
           </motion.div>
-          <p className="px-1 py-2 text-center font-serif text-[11px] italic">
-            {hero.caption} — {formatDate(hero.takenAt)}
+          <p className="px-1 py-2 text-center font-hand text-[17px] font-semibold">
+            {hero.caption} — {formatDate(hero.takenAt)} ♥
           </p>
         </div>
 
         {/* right NEW UPDATE column */}
         <div className="flex flex-col">
-          <h2 className="bg-black py-2.5 text-center font-display text-[20px] tracking-[0.2em] text-white">
+          <h2 className="bg-raspberry py-2.5 text-center font-display text-[20px] tracking-[0.2em] text-white">
             NEW UPDATE
           </h2>
           <ul>
@@ -82,10 +83,10 @@ export default function Home() {
             note: {daysTogether} days together
           </div>
           <div className="mt-auto flex border-t-[3px] border-black">
-            <Link href="/gallery" className="flex-1 bg-black py-2.5 text-center text-[11px] font-extrabold tracking-[0.2em] text-white">
+            <Link href="/gallery" className="sticker m-2 flex-1 bg-raspberry py-2.5 text-center text-[11px] font-extrabold tracking-[0.2em] text-white">
               SEE PHOTOS
             </Link>
-            <Link href="/timeline" className="flex-1 py-2.5 text-center text-[11px] font-extrabold tracking-[0.2em]">
+            <Link href="/timeline" className="m-2 flex-1 border-[2.5px] border-black bg-white py-2.5 text-center text-[11px] font-extrabold tracking-[0.2em]">
               OUR STORY
             </Link>
           </div>
@@ -133,7 +134,8 @@ export default function Home() {
       </section>
 
       {/* ── FLIPBOOK PROMO ── */}
-      <section className="mt-4 border-[3px] border-black bg-[#2A3757] text-white shadow-hardSm">
+      <section className="relative mt-4 border-[3px] border-black bg-raspberry text-white shadow-hardSm">
+        <span aria-hidden className="tape-rose absolute -top-3 left-10 h-6 w-20 -rotate-6" />
         <Link href="/flipbook" className="flex items-center justify-between gap-3 p-4 sm:p-5">
           <span>
             <span className="text-[9px] font-extrabold tracking-[0.3em] text-white/70 sm:text-[10px]">
@@ -142,11 +144,11 @@ export default function Home() {
             <span className="mt-1 block font-display text-[26px] leading-none sm:text-[36px]">
               OUR FLIPBOOK!
             </span>
-            <span className="mt-1 block font-script text-[22px] leading-none text-[#B9C4DC] sm:text-[26px]">
+            <span className="mt-1 block font-script text-[22px] leading-none text-blush sm:text-[26px]">
               flip it, sweetheart
             </span>
           </span>
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center border-2 border-white bg-white text-[20px] font-extrabold text-[#2A3757]">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center border-2 border-white bg-white text-[20px] font-extrabold text-raspberry">
             →
           </span>
         </Link>

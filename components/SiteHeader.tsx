@@ -25,19 +25,19 @@ export default function SiteHeader() {
   return (
     <header>
       {/* top dateline */}
-      <div className="flex items-center justify-between border-b-[3px] border-black px-3 py-1.5 text-[10px] font-bold tracking-[0.14em] sm:px-5">
+      <div className="flex items-center justify-between bg-raspberry px-3 py-1.5 text-[10px] font-bold tracking-[0.14em] text-white sm:px-5">
         <span>★ EST. 2024 — KITA BERDUA</span>
         <span className="hidden sm:inline">{today.toUpperCase()}</span>
         <span>EDITION NO. 01</span>
       </div>
 
       {/* masthead */}
-      <div className="flex items-center justify-between px-3 py-3 sm:px-5">
+      <div className="stripes-blue flex items-center justify-between border-b-[3px] border-black px-3 py-3 sm:px-5">
         <Link href="/" className="font-display text-[34px] leading-none tracking-wide sm:text-[44px]">
-          KITA<span className="align-super text-[18px] text-dusty">.</span>
+          KITA<span className="align-super text-[18px] text-raspberry">.</span>
         </Link>
-        <p className="hidden max-w-[220px] text-right font-serif text-[11px] italic leading-snug md:block">
-          Having a friend is a real privilege and if you forget about them you run the risk.
+        <p className="sticker hidden -rotate-3 border-2 border-black bg-white px-4 py-1.5 font-hand text-[16px] font-bold md:block">
+          our digital scrapbook ♥
         </p>
         <button
           onClick={() => setOpen((v) => !v)}
@@ -51,7 +51,7 @@ export default function SiteHeader() {
       </div>
 
       {/* black navbar — like reference */}
-      <nav className="hidden border-y-[3px] border-black bg-black px-5 py-2.5 md:block">
+      <nav className="hidden border-y-[3px] border-black bg-raspberry px-5 py-2.5 md:block">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-7">
             {LINKS.map((l) => {
@@ -80,7 +80,7 @@ export default function SiteHeader() {
 
       {/* mobile dropdown */}
       {open && (
-        <nav className="border-t-[3px] border-black bg-black px-4 py-3 md:hidden">
+        <nav className="border-t-[3px] border-black bg-raspberry px-4 py-3 md:hidden">
           <div className="flex flex-col">
             {LINKS.map((l) => (
               <Link

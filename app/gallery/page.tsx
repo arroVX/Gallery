@@ -30,16 +30,18 @@ export default function GalleryPage() {
 
   return (
     <main className="px-3 py-4 sm:px-5">
-      <div className="border-[3px] border-black bg-white shadow-hardSm">
+      <div className="relative border-[3px] border-black bg-white shadow-hardSm">
+        <span aria-hidden className="tape absolute -top-3 left-6 z-10 h-6 w-20 -rotate-6" />
+        <span aria-hidden className="tape absolute -top-3 right-6 z-10 h-6 w-20 rotate-6" />
         <p className="border-b-[3px] border-black py-1.5 text-center text-[10px] font-extrabold tracking-[0.3em]">
           ★ OUR STORIES ★
         </p>
         <h1 className="py-4 text-center font-display text-[42px] leading-none sm:text-[72px]">
           PHOTO GALLERY!
         </h1>
-        <p className="border-t-[3px] border-black py-2 text-center font-serif text-[12px] italic">
+        <p className="border-t-[3px] border-black py-2 text-center font-hand text-[16px] font-semibold">
           {live && photos.length === 0
-            ? "Belum ada foto — upload dulu"
+            ? "Belum ada foto — upload dulu yuk ♥"
             : `${photos.length} foto tersimpan rapi — captured moments from our trips.`}
         </p>
       </div>
@@ -54,17 +56,24 @@ export default function GalleryPage() {
       </div>
 
       <div className="no-scrollbar -mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1">
-        {[...ALBUMS, "Favorit"].map((a) => {
+        {[...ALBUMS, "Favorit"].map((a, n) => {
           const active = a === album;
           return (
             <button
               key={a}
               onClick={() => setAlbum(a as (typeof ALBUMS)[number] | "Favorit")}
-              className={`shrink-0 border-[2.5px] border-black px-5 py-2 text-[11px] font-extrabold tracking-[0.14em] transition ${
-                active ? "bg-black text-white shadow-hardSm" : "bg-white hover:bg-black/5"
+              className={`sticker flex shrink-0 items-center gap-2 border-[2.5px] border-black px-4 py-2 text-[11px] font-extrabold tracking-[0.14em] transition ${
+                active ? "bg-raspberry text-white" : "bg-white hover:bg-blush"
               }`}
             >
-              {a === "Favorit" ? "★ FAVORIT" : a.toUpperCase()}
+              <span
+                className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
+                  active ? "bg-white text-raspberry" : "bg-raspberry text-white"
+                }`}
+              >
+                {a === "Favorit" ? "★" : `0${n + 1}`.slice(-2)}
+              </span>
+              {a === "Favorit" ? "FAVORIT" : a.toUpperCase()}
             </button>
           );
         })}

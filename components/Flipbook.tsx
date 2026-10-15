@@ -51,7 +51,7 @@ function StarryBg() {
 function PageFace({ page }: { page: Page }) {
   if (page.kind === "cover") {
     return (
-      <div className="relative flex h-full flex-col items-center justify-center overflow-hidden bg-[#2A3757] p-4 text-center text-white">
+      <div className="relative flex h-full flex-col items-center justify-center overflow-hidden bg-raspberry p-4 text-center text-white">
         <StarryBg />
         <p className="text-[9px] font-extrabold tracking-[0.3em] text-white/70 sm:text-[10px]">
           ★ OUR STORY ★
@@ -61,7 +61,7 @@ function PageFace({ page }: { page: Page }) {
           <br />
           BOOK
         </p>
-        <p className="mt-2 font-script text-[26px] leading-none text-[#B9C4DC] sm:text-[32px]">
+        <p className="mt-2 font-script text-[26px] leading-none text-blush sm:text-[32px]">
           kita berdua
         </p>
         <p className="mt-3 border border-white/50 px-3 py-1 font-mono text-[9px] font-bold tracking-[0.2em] sm:text-[10px]">
@@ -73,9 +73,9 @@ function PageFace({ page }: { page: Page }) {
 
   if (page.kind === "back") {
     return (
-      <div className="relative flex h-full flex-col items-center justify-center overflow-hidden bg-[#2A3757] p-4 text-center text-white">
+      <div className="relative flex h-full flex-col items-center justify-center overflow-hidden bg-raspberry p-4 text-center text-white">
         <StarryBg />
-        <p className="font-script text-[30px] leading-none text-[#B9C4DC] sm:text-[40px]">
+        <p className="font-script text-[30px] leading-none text-blush sm:text-[40px]">
           I love you,
         </p>
         <p className="mt-1 font-display text-[30px] leading-none sm:text-[42px]">
@@ -90,16 +90,16 @@ function PageFace({ page }: { page: Page }) {
 
   if (page.kind === "wishes") {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-[#FBF6E9] p-4 text-center sm:p-5">
-        <p className="text-[9px] font-extrabold tracking-[0.3em] text-[#5A6B94] sm:text-[10px]">
+      <div className="flex h-full flex-col items-center justify-center bg-cream p-4 text-center sm:p-5">
+        <p className="text-[9px] font-extrabold tracking-[0.3em] text-raspberry sm:text-[10px]">
           ✦ WISHES FOR YOU ✦
         </p>
-        <p className="mt-2 font-serif text-[12px] italic leading-relaxed text-[#3C4C6E] sm:text-[13.5px]">
+        <p className="mt-2 font-serif text-[12px] italic leading-relaxed text-black sm:text-[13.5px]">
           “Wishing you days as sweet as your laugh — may every ordinary moment
           turn golden as long as we face it together.”
         </p>
-        <p className="mt-3 text-[15px] tracking-[0.3em] text-[#8E9CBE]">♥ ♥ ♥</p>
-        <p className="mt-1 font-script text-[24px] leading-none text-[#5A6B94] sm:text-[28px]">
+        <p className="mt-3 text-[15px] tracking-[0.3em] text-dusty">♥ ♥ ♥</p>
+        <p className="mt-1 font-script text-[24px] leading-none text-raspberry sm:text-[28px]">
           make a wish!
         </p>
       </div>
@@ -108,16 +108,16 @@ function PageFace({ page }: { page: Page }) {
 
   if (page.kind === "closing") {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-[#FBF6E9] p-4 text-center sm:p-5">
-        <p className="font-display text-[22px] leading-tight text-[#3C4C6E] sm:text-[30px]">
+      <div className="flex h-full flex-col items-center justify-center bg-cream p-4 text-center sm:p-5">
+        <p className="font-display text-[22px] leading-tight text-black sm:text-[30px]">
           TO MANY
           <br />
           MORE MEMORIES
         </p>
-        <p className="mt-2 font-script text-[26px] leading-none text-[#5A6B94] sm:text-[32px]">
+        <p className="mt-2 font-script text-[26px] leading-none text-raspberry sm:text-[32px]">
           my sweet heart
         </p>
-        <p className="mt-3 border-2 border-[#3C4C6E] px-4 py-1 text-[9px] font-extrabold tracking-[0.2em] text-[#3C4C6E] sm:text-[10px]">
+        <p className="mt-3 border-2 border-black px-4 py-1 text-[9px] font-extrabold tracking-[0.2em] text-black sm:text-[10px]">
           {daysTogether} DAYS & COUNTING
         </p>
       </div>
@@ -125,13 +125,13 @@ function PageFace({ page }: { page: Page }) {
   }
 
   if (page.kind === "blank") {
-    return <div className="h-full bg-[#FBF6E9]" />;
+    return <div className="h-full bg-cream" />;
   }
 
   const p = page.photo;
   return (
-    <div className="flex h-full flex-col bg-[#FBF6E9] p-2 sm:p-2.5">
-      <div className="relative border-2 border-[#3C4C6E]">
+    <div className="flex h-full flex-col bg-cream p-2 sm:p-2.5">
+      <div className="relative border-2 border-black">
         <Image
           src={p.src}
           alt={p.caption}
@@ -142,13 +142,13 @@ function PageFace({ page }: { page: Page }) {
           loading="lazy"
         />
         {/* selotip sudut */}
-        <span className="absolute -left-2 -top-2 h-4 w-10 -rotate-45 bg-[#8E9CBE]/50" aria-hidden />
-        <span className="absolute -right-2 -top-2 h-4 w-10 rotate-45 bg-[#8E9CBE]/50" aria-hidden />
+        <span className="absolute -left-2 -top-2 h-4 w-10 -rotate-45 bg-dusty/70" aria-hidden />
+        <span className="absolute -right-2 -top-2 h-4 w-10 rotate-45 bg-dusty/70" aria-hidden />
       </div>
-      <p className="mt-1.5 truncate text-center font-display text-[12px] tracking-wide text-[#3C4C6E] sm:text-[14px]">
+      <p className="mt-1.5 truncate text-center font-display text-[12px] tracking-wide text-black sm:text-[14px]">
         {p.caption.toUpperCase()}
       </p>
-      <p className="text-center font-mono text-[8.5px] font-bold tracking-[0.14em] text-[#3C4C6E]/60 sm:text-[9.5px]">
+      <p className="text-center font-mono text-[8.5px] font-bold tracking-[0.14em] text-black/60 sm:text-[9.5px]">
         {formatDate(p.takenAt).toUpperCase()}
       </p>
     </div>
@@ -336,7 +336,7 @@ export default function Flipbook({ photos }: { photos: Photo[] }) {
               {Array.from({ length: 13 }).map((_, i) => (
                 <span
                   key={i}
-                  className="-ml-3 block h-3 w-3 rounded-full border-2 border-black bg-[#FCFDFF] sm:-ml-3.5 sm:h-3.5 sm:w-3.5"
+                  className="-ml-3 block h-3 w-3 rounded-full border-2 border-black bg-ivory sm:-ml-3.5 sm:h-3.5 sm:w-3.5"
                 />
               ))}
             </div>

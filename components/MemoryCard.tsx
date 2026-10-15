@@ -23,17 +23,24 @@ export default function MemoryCard({
   event,
   photos,
   onOpen,
+  num,
 }: {
   event: TimelineEvent;
   photos: Photo[];
   onOpen: () => void;
+  num?: number;
 }) {
   const cover = photos.find((p) => p.id === event.coverId) ?? photos[0];
   const rest = photos.filter((p) => p.id !== cover?.id).slice(0, 2);
   const extra = photos.length - 1 - rest.length;
 
   return (
-    <article className="border-[3px] border-black bg-white shadow-hardSm">
+    <article className="relative border-[3px] border-black bg-white shadow-hardSm">
+      {typeof num === "number" && (
+        <span className="sticker absolute -left-2 -top-3 z-10 flex h-9 w-9 rotate-[-6deg] items-center justify-center border-2 border-black bg-raspberry font-display text-[15px] text-white">
+          {String(num + 1).padStart(2, "0")}
+        </span>
+      )}
       <button onClick={onOpen} className="block w-full p-2 text-left" aria-label={`Buka ${event.title}`}>
         {cover ? (
           <div className="grid h-44 grid-cols-[3fr_2fr] grid-rows-1 gap-1.5 overflow-hidden sm:h-52">
@@ -85,12 +92,12 @@ export default function MemoryCard({
           {event.title.toUpperCase()}
         </span>
         {event.description && (
-          <span className="block truncate px-1 font-serif text-[12px] italic opacity-70">
+          <span className="block truncate px-1 font-hand text-[16px] font-semibold opacity-80">
             {event.description}
           </span>
         )}
       </button>
-      <div className="border-t-[3px] border-black bg-[#2A3757] px-3 py-2 text-center">
+      <div className="border-t-[3px] border-black bg-raspberry px-3 py-2 text-center">
         <p className="font-mono text-[11px] font-bold tracking-[0.18em] text-white">
           {event.date ? formatDate(event.date).toUpperCase() : "TANPA TANGGAL"} — {photos.length} FOTO
         </p>

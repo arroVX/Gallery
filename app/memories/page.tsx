@@ -29,16 +29,18 @@ export default function MemoriesPage() {
 
   return (
     <main className="px-3 py-4 sm:px-5">
-      <div className="border-[3px] border-black bg-white shadow-hardSm">
+      <div className="relative border-[3px] border-black bg-white shadow-hardSm">
+        <span aria-hidden className="tape absolute -top-3 left-8 z-10 h-6 w-20 -rotate-6" />
+        <span aria-hidden className="tape-rose absolute -top-3 right-8 z-10 h-6 w-20 rotate-6" />
         <p className="border-b-[3px] border-black py-1.5 text-center text-[10px] font-extrabold tracking-[0.3em]">
           ★ MEMORY CARDS ★
         </p>
         <h1 className="py-4 text-center font-display text-[42px] leading-none sm:text-[64px]">
           OUR MOMENTS!
         </h1>
-        <p className="border-t-[3px] border-black py-2 text-center font-serif text-[12px] italic">
+        <p className="border-t-[3px] border-black py-2 text-center font-hand text-[16px] font-semibold">
           {events.length === 0
-            ? "Belum ada momen — bikin satu yuk"
+            ? "Belum ada momen — bikin satu yuk ♥"
             : `${events.length} momen, ${all.length} foto — ketuk kartu untuk slide.`}
         </p>
       </div>
@@ -46,7 +48,7 @@ export default function MemoriesPage() {
       <div className="mt-4 text-center">
         <Link
           href="/memories/kelola"
-          className="inline-block border-[3px] border-black bg-black px-6 py-2.5 text-[12px] font-extrabold tracking-[0.2em] text-white shadow-hardSm"
+          className="sticker inline-block border-[3px] border-black bg-raspberry px-6 py-2.5 text-[12px] font-extrabold tracking-[0.2em] text-white"
         >
           + BIKIN MOMEN BARU
         </Link>
@@ -72,12 +74,13 @@ export default function MemoriesPage() {
         </div>
       ) : (
         <div className="mx-auto mt-4 grid max-w-4xl gap-4 sm:grid-cols-2">
-          {events.map((ev) => (
+          {events.map((ev, n) => (
             <MemoryCard
               key={ev.id}
               event={ev}
               photos={resolveMemoryPhotos(ev, all)}
               onOpen={() => open(ev.id)}
+              num={n}
             />
           ))}
         </div>

@@ -50,11 +50,12 @@ export default function TimelineView() {
               <span className="absolute -left-7 top-6 flex h-5 w-5 items-center justify-center">
                 <span className="h-3 w-3 border-2 border-black bg-white" />
               </span>
-              <p className="border-b-[3px] border-black bg-black py-1.5 text-center text-[10px] font-extrabold tracking-[0.3em] text-white">
+              <p className="border-b-[3px] border-black bg-raspberry py-1.5 text-center text-[10px] font-extrabold tracking-[0.3em] text-white">
                 {formatDate(ev.date).toUpperCase()} — NO. {String(i + 1).padStart(2, "0")}
               </p>
-              <div className="p-2">
-                <div className="border-2 border-black">
+              <div className="relative p-2">
+                <span aria-hidden className="tape absolute -top-1 left-1/2 z-10 h-5 w-16 -translate-x-1/2 -rotate-2" />
+                <div className="border-2 border-black bg-black/10">
                   <Image
                     src={thumb(cover.src, 800)}
                     alt={ev.title}

@@ -31,8 +31,12 @@ export default function GalleryGrid({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.3, delay: (i % 4) * 0.03 }}
-          className="break-inside-avoid border-[3px] border-black bg-white p-1.5 shadow-hardSm"
+          className="relative break-inside-avoid border-[3px] border-black bg-white p-1.5 pb-2 shadow-hardSm"
         >
+          <span
+            aria-hidden
+            className={`tape absolute -top-2.5 left-1/2 z-10 h-5 w-16 -translate-x-1/2 ${i % 2 === 0 ? "-rotate-3" : "rotate-3"}`}
+          />
           <button
             onClick={() => onSelect(i)}
             className="block w-full text-left"
@@ -49,13 +53,11 @@ export default function GalleryGrid({
                 loading="lazy"
               />
             </span>
-            <span
-              className={`mt-1.5 block border-2 border-black px-2 py-1.5 text-center text-[10.5px] font-extrabold tracking-wide ${
-                i % 3 === 1 ? "bg-white text-black" : "bg-black text-white"
-              }`}
-            >
-              <span className="block truncate">{p.caption.toUpperCase()}</span>
-              <span className={`mt-0.5 block text-[9px] font-bold tracking-[0.14em] ${i % 3 === 1 ? "text-black/60" : "text-white/70"}`}>
+            <span className="mt-1.5 block px-1 pb-0.5 text-center">
+              <span className="block truncate font-hand text-[17px] font-semibold leading-tight">
+                {p.caption || "tanpa judul ♥"}
+              </span>
+              <span className="mt-0.5 block font-mono text-[9px] font-bold tracking-[0.14em] opacity-60">
                 {formatDate(p.takenAt).toUpperCase()}
               </span>
             </span>

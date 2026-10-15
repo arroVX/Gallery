@@ -154,7 +154,7 @@ export default function KelolaMemoriesPage() {
       )}
 
       {user && (
-        <div className="mt-4 space-y-2 border-[3px] border-black bg-white p-4">
+        <div className="gridpaper mt-4 space-y-2 border-[3px] border-black p-4">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -223,7 +223,7 @@ export default function KelolaMemoriesPage() {
           <button
             onClick={save}
             disabled={saving || picked.length === 0}
-            className="w-full border-[3px] border-black bg-black py-3 text-sm font-extrabold tracking-[0.2em] text-white disabled:opacity-40"
+            className="sticker w-full border-[3px] border-black bg-raspberry py-3 text-sm font-extrabold tracking-[0.2em] text-white disabled:opacity-40"
           >
             {saving ? "MENYIMPAN…" : `SIMPAN MOMEN (${picked.length} FOTO)`}
           </button>

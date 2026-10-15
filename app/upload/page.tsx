@@ -302,7 +302,7 @@ export default function UploadPage() {
         </div>
       )}
 
-      <div className="mt-4 space-y-2 border-[3px] border-black bg-white p-4">
+      <div className="gridpaper mt-4 space-y-2 border-[3px] border-black p-4">
         <input
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
@@ -347,7 +347,7 @@ export default function UploadPage() {
       <button
         onClick={submit}
         disabled={picks.length === 0}
-        className="mt-4 w-full border-[3px] border-black bg-black py-3.5 text-sm font-extrabold tracking-[0.2em] text-white shadow-hardSm disabled:opacity-40"
+        className="sticker mt-4 w-full border-[3px] border-black bg-raspberry py-3.5 text-sm font-extrabold tracking-[0.2em] text-white disabled:opacity-40"
       >
         UPLOAD {picks.length > 0 ? `${picks.length} FOTO` : ""}
       </button>

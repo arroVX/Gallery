@@ -300,7 +300,7 @@ export default function PhotoLightbox({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 60, opacity: 0, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="relative max-h-[92dvh] w-full max-w-3xl overflow-y-auto border-[3px] border-black bg-white shadow-hard"
+            className="relative max-h-[92dvh] w-full max-w-3xl overflow-y-auto border-[3px] border-black bg-[#FFFDF7] shadow-hard"
           >
             <button
               onClick={onClose}
@@ -440,7 +440,7 @@ export default function PhotoLightbox({
                 <h3 className="mt-2 font-display text-[30px] leading-none tracking-wide">
                   {photo.caption.toUpperCase()}
                 </h3>
-                <p className="mt-1 font-serif text-[13px] italic">{photo.location}</p>
+                <p className="mt-1 font-hand text-[17px] font-semibold">{photo.location}</p>
 
                 {canWrite ? (
                   <>
