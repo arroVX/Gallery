@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -203,4 +204,32 @@ export function useTimeline() {
   }, []);
 
   return { events, error };
+}
+
+export type MemoryInput = {
+  title: string;
+  date: string; // YYYY-MM-DD
+  description: string;
+  coverId: string;
+  photoIds: string[];
+};
+
+// Tulis 1 memory card (multi-foto) ke `timeline_events`.
+// Rules create wajib: date, title, order.
+export async function addMemory(input: MemoryInput): Promise<string> {
+  if (!db) throw new Error("Firestore belum siap.");
+  const ref = await addDoc(collection(db, "timeline_events"), {
+    title: input.title,
+    date: input.date,
+    description: input.description,
+    coverPhotoId: input.coverId,
+    photoIds: input.photoIds,
+    order: Date.now(),
+  });
+  return ref.id;
+}
+
+export async function removeMemory(id: string): Promise<void> {
+  if (!db) throw new Error("Firestore belum siap.");
+  await deleteDoc(doc(db, "timeline_events", id));
 }

@@ -8,6 +8,7 @@ const TABS = [
   { href: "/gallery", label: "GALLERY" },
   { href: "/flipbook", label: "BOOK" },
   { href: "/timeline", label: "STORY" },
+  { href: "/memories", label: "MOMEN" },
   { href: "/upload", label: "UPLOAD" },
 ];
 
@@ -16,7 +17,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
-      <div className="mx-auto grid w-full max-w-md grid-cols-5 border-[3px] border-black bg-black text-white shadow-hardSm">
+      <div className="mx-auto grid w-full max-w-md grid-cols-6 border-[3px] border-black bg-black text-white shadow-hardSm">
         {TABS.map((t) => {
           const active = t.href === "/" ? pathname === "/" : pathname.startsWith(t.href);
           return (
