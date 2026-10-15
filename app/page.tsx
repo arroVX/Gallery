@@ -133,19 +133,19 @@ export default function Home() {
         ))}
       </section>
 
-      {/* ── FLIPBOOK PROMO ── */}
+      {/* ── MEMORIES PROMO ── */}
       <section className="relative mt-4 border-[3px] border-black bg-raspberry text-white shadow-hardSm">
         <span aria-hidden className="tape-rose absolute -top-3 left-10 h-6 w-20 -rotate-6" />
-        <Link href="/flipbook" className="flex items-center justify-between gap-3 p-4 sm:p-5">
+        <Link href="/memories" className="flex items-center justify-between gap-3 p-4 sm:p-5">
           <span>
             <span className="text-[9px] font-extrabold tracking-[0.3em] text-white/70 sm:text-[10px]">
-              ★ NEW! BUKA HALAMANNYA ★
+              ★ KARTU KENANGAN ★
             </span>
             <span className="mt-1 block font-display text-[26px] leading-none sm:text-[36px]">
-              OUR FLIPBOOK!
+              OUR MOMENTS!
             </span>
             <span className="mt-1 block font-script text-[22px] leading-none text-blush sm:text-[26px]">
-              flip it, sweetheart
+              one card, many photos
             </span>
           </span>
           <span className="flex h-12 w-12 shrink-0 items-center justify-center border-2 border-white bg-white text-[20px] font-extrabold text-raspberry">
