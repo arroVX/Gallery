@@ -78,6 +78,17 @@ export const thumb = (src: string, width = 400, rotate = 0): string => {
   return `${src.slice(0, i + marker.length)}w_${width},q_auto,f_auto,a_auto${angleOf(rotate)}/${rest}`;
 };
 
+// URL unduh paksa (Content-Disposition attachment) untuk URL Cloudinary.
+// Bukan URL Cloudinary -> kembalikan asli (browser yang menangani).
+export const downloadUrl = (src: string, rotate = 0): string => {
+  const marker = "/image/upload/";
+  const i = src.indexOf(marker);
+  if (!src.startsWith("https://res.cloudinary.com/") || i < 0) return src;
+  const rest = src.slice(i + marker.length);
+  if (/^[a-z]+_[^/]*\//.test(rest)) return src;
+  return `${src.slice(0, i + marker.length)}fl_attachment,q_auto,f_auto,a_auto${angleOf(rotate)}/${rest}`;
+};
+
 // Versi penuh untuk popup detail: kualitas/format otomatis +
 // auto-rotasi EXIF (`a_auto`) + sudut user agar foto miring permanen tegak.
 // Tanpa resize agar ketajaman HD tetap. Bukan URL Cloudinary -> asli.

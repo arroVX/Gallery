@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ALBUMS, formatDate, full, type Photo } from "@/lib/gallery";
+import { ALBUMS, downloadUrl, formatDate, full, thumb, type Photo } from "@/lib/gallery";
 import { usePhotos, useTimeline, useUser, type PhotoPatch } from "@/lib/store";
 import { useNotify } from "@/lib/notify";
 
@@ -152,11 +152,13 @@ export default function PhotoLightbox({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [rotation, setRotation] = useState(0); // 0 / 90 / 180 / 270
   const [focus, setFocus] = useState(false); // mode foto penuh (panel info disembunyikan)
+  const [infoOpen, setInfoOpen] = useState(true); // panel info bisa dilipat
   const [dragging, setDragging] = useState(false);
   const frameRef = useRef<HTMLDivElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const pinchDist = useRef<number | null>(null);
   const lastPt = useRef({ x: 0, y: 0 });
+  const swipe = useRef<{ x: number; y: number; t: number } | null>(null);
 
   useEffect(() => {
     setEditing(false);
@@ -165,6 +167,7 @@ export default function PhotoLightbox({
     setPan({ x: 0, y: 0 });
     setRotation(0);
     setFocus(false);
+    setInfoOpen(true);
     pointers.current.clear();
     pinchDist.current = null;
   }, [photo?.id]);
@@ -194,6 +197,39 @@ export default function PhotoLightbox({
     setRotation((r) => (r + 90) % 360);
     setPan({ x: 0, y: 0 });
   }, []);
+
+  const toggleFavorite = useCallback(async () => {
+    if (!photo) return;
+    try {
+      await updatePhoto(photo.id, { favorite: !photo.favorite });
+      notify(photo.favorite ? "Dihapus dari favorit." : "Ditandai favorit ★", "success");
+    } catch (e) {
+      notify(`Gagal: ${e instanceof Error ? e.message : String(e)}`, "error");
+    }
+  }, [photo, updatePhoto, notify]);
+
+  const share = useCallback(async () => {
+    if (!photo) return;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: photo.caption || "Foto",
+          text: photo.caption,
+          url: photo.src,
+        });
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(photo.src);
+        notify("Link foto disalin.", "success");
+      } else {
+        notify("Bagikan tidak didukung browser ini.", "error");
+      }
+    } catch (e) {
+      // Pembatalan share sheet oleh user bukan error.
+      if ((e as Error)?.name !== "AbortError") {
+        notify(`Gagal membagikan: ${(e as Error)?.message ?? String(e)}`, "error");
+      }
+    }
+  }, [photo, notify]);
 
   const toggleZoom = useCallback(() => {
     setZoom((z) => {
@@ -276,9 +312,13 @@ export default function PhotoLightbox({
       const [a, b] = Array.from(pointers.current.values());
       pinchDist.current = Math.hypot(a.x - b.x, a.y - b.y);
       setDragging(false);
+      swipe.current = null; // cubit membatalkan gestur geser
     } else if (zoom > 1) {
       lastPt.current = { x: e.clientX, y: e.clientY };
       setDragging(true);
+    } else if (pointers.current.size === 1) {
+      // Calon gestur geser pindah foto (hanya saat belum zoom).
+      swipe.current = { x: e.clientX, y: e.clientY, t: Date.now() };
     }
   };
 
@@ -309,7 +349,26 @@ export default function PhotoLightbox({
   const endPointer = (e: React.PointerEvent<HTMLDivElement>) => {
     pointers.current.delete(e.pointerId);
     if (pointers.current.size < 2) pinchDist.current = null;
-    if (pointers.current.size === 0) setDragging(false);
+    if (pointers.current.size === 0) {
+      setDragging(false);
+      // Geser horizontal cepat saat belum zoom = pindah foto.
+      // Abaikan jika dilepas di atas tombol (mis. toolbar zoom).
+      const s = swipe.current;
+      swipe.current = null;
+      if (
+        s &&
+        zoom === 1 &&
+        photos.length > 1 &&
+        !(e.target as HTMLElement).closest?.("button")
+      ) {
+        const dx = e.clientX - s.x;
+        const dy = e.clientY - s.y;
+        if (Date.now() - s.t < 500 && Math.abs(dx) > 70 && Math.abs(dy) < 60) {
+          if (dx < 0) next();
+          else prev();
+        }
+      }
+    }
   };
 
   return (
@@ -330,13 +389,27 @@ export default function PhotoLightbox({
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
             className="relative max-h-[92dvh] w-full max-w-3xl overflow-y-auto border-[3px] border-black bg-[#FFFDF7] shadow-hard"
           >
-            <button
-              onClick={onClose}
-              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center border-2 border-black bg-black text-[15px] font-bold text-white transition hover:bg-white hover:text-black"
-              aria-label="Tutup"
-            >
-              ✕
-            </button>
+            <div className="absolute right-3 top-3 z-10 flex gap-1.5">
+              {canWrite && (
+                <button
+                  onClick={toggleFavorite}
+                  className={`flex h-9 w-9 items-center justify-center border-2 border-black text-[16px] font-bold transition ${
+                    photo.favorite ? "bg-raspberry text-white" : "bg-white text-black"
+                  }`}
+                  aria-label="Toggle favorit"
+                  title="Favorit"
+                >
+                  {photo.favorite ? "★" : "☆"}
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="flex h-9 w-9 items-center justify-center border-2 border-black bg-black text-[15px] font-bold text-white transition hover:bg-white hover:text-black"
+                aria-label="Tutup"
+              >
+                ✕
+              </button>
+            </div>
             <div className={focus ? "grid" : "grid sm:grid-cols-[1.25fr_1fr]"}>
               {/* ── Zoomable photo frame ── */}
               <div
@@ -460,8 +533,34 @@ export default function PhotoLightbox({
                 )}
               </div>
 
+              {photos.length > 1 && (
+                <div className="no-scrollbar flex gap-1.5 overflow-x-auto border-b-[3px] border-black bg-black/5 p-1.5">
+                  {photos.map((p, i) => (
+                    <button
+                      key={p.id}
+                      onClick={() => onNav(i)}
+                      aria-label={`Ke foto ${i + 1}`}
+                      className={`h-12 w-12 shrink-0 overflow-hidden border-2 transition ${
+                        i === index ? "border-raspberry" : "border-black/30 opacity-60"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={thumb(p.src, 150, p.rotate ?? 0)}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                        draggable={false}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {!focus && (
               <div className="p-5 sm:p-6">
+                {infoOpen && (
+                <>
                 <p className="text-[11px] font-bold tracking-widest text-charcoal/50">
                   {formatDate(photo.takenAt).toUpperCase()} — {photo.album.toUpperCase()}
                 </p>
@@ -527,7 +626,53 @@ export default function PhotoLightbox({
                   />
                 )}
 
-                <div className="mt-5 flex items-center justify-between border-t-[3px] border-black pt-4">
+                <div className="mt-3 flex gap-2">
+                  <a
+                    href={downloadUrl(photo.src, photo.rotate ?? 0)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 border-2 border-black bg-white py-2 text-center text-[11px] font-extrabold tracking-widest"
+                  >
+                    ⤓ UNDUH HD
+                  </a>
+                  <button
+                    onClick={share}
+                    className="flex-1 border-2 border-black bg-white py-2 text-[11px] font-extrabold tracking-widest"
+                  >
+                    ⤴ BAGIKAN
+                  </button>
+                </div>
+
+                {usedIn.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-[10px] font-extrabold tracking-[0.18em] opacity-60">
+                      ADA DI MOMEN:
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      {usedIn.map((e) => (
+                        <Link
+                          key={e.id}
+                          href="/memories"
+                          onClick={onClose}
+                          className="border-2 border-black bg-blush px-2.5 py-1 text-[10px] font-extrabold tracking-wide"
+                        >
+                          ◉ {e.title.toUpperCase()}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                </>
+                )}
+
+                <button
+                  onClick={() => setInfoOpen((v) => !v)}
+                  className="mt-4 flex w-full items-center justify-center gap-1 py-1 text-[10px] font-extrabold tracking-[0.2em] opacity-60"
+                >
+                  {infoOpen ? "▴ SEMBUNYIKAN INFO" : "▾ TAMPILKAN INFO"}
+                </button>
+
+                <div className="mt-3 flex items-center justify-between border-t-[3px] border-black pt-4">
                   <button
                     onClick={prev}
                     className="border-2 border-black bg-black px-5 py-2.5 text-[12px] font-extrabold text-white"
