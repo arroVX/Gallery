@@ -255,3 +255,16 @@ export async function removeMemory(id: string): Promise<void> {
   if (!db) throw new Error("Firestore belum siap.");
   await deleteDoc(doc(db, "timeline_events", id));
 }
+
+// Ubah isi momen (dipakai untuk memperbaiki momen yang fotonya hilang).
+export async function updateMemory(id: string, input: MemoryInput): Promise<void> {
+  const { db } = initFirebase();
+  if (!db) throw new Error("Firestore belum siap.");
+  await updateDoc(doc(db, "timeline_events", id), {
+    title: input.title,
+    date: input.date,
+    description: input.description,
+    coverPhotoId: input.coverId,
+    photoIds: input.photoIds,
+  });
+}

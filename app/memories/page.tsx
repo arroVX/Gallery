@@ -18,6 +18,13 @@ export default function MemoriesPage() {
     return resolveMemoryPhotos(ev, all);
   }, [events, all, openId]);
 
+  // Kartu yang fotonya sudah habis dihapus tidak ditampilkan ke pengunjung —
+  // perbaiki lewat /memories/kelola (tombol EDIT).
+  const visibleEvents = useMemo(
+    () => events.filter((e) => resolveMemoryPhotos(e, all).length > 0),
+    [events, all]
+  );
+
   const open = (id: string) => {
     setOpenId(id);
     setIndex(0);
@@ -39,7 +46,7 @@ export default function MemoriesPage() {
           OUR MOMENTS!
         </h1>
         <p className="border-t-[3px] border-black py-2 text-center font-hand text-[16px] font-semibold">
-          {events.length === 0 ? "Belum ada momen — bikin satu yuk ♥" : `${events.length} momen • ${all.length} foto`}
+          {visibleEvents.length === 0 ? "Belum ada momen — bikin satu yuk ♥" : `${visibleEvents.length} momen • ${all.length} foto`}
         </p>
       </div>
 
@@ -63,7 +70,7 @@ export default function MemoriesPage() {
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-black border-t-transparent" />
           <p className="font-serif text-[12px] italic">Memuat momen…</p>
         </div>
-      ) : events.length === 0 && !error ? (
+      ) : visibleEvents.length === 0 && !error ? (
         <div className="mt-4 border-[3px] border-dashed border-black bg-white p-10 text-center">
           <p className="font-display text-[22px] tracking-wide">BELUM ADA MOMEN</p>
           <p className="mt-1 font-serif text-[13px] italic">
@@ -72,7 +79,7 @@ export default function MemoriesPage() {
         </div>
       ) : (
         <div className="mx-auto mt-4 grid max-w-4xl gap-4 sm:grid-cols-2">
-          {events.map((ev, n) => (
+          {visibleEvents.map((ev, n) => (
             <MemoryCard
               key={ev.id}
               event={ev}
