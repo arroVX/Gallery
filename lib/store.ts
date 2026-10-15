@@ -38,6 +38,9 @@ const toPhoto = (id: string, d: DocumentData): Photo => ({
   // Dokumen Firestore memakai `isFavorite`, model UI memakai `favorite`.
   favorite: Boolean(d.isFavorite ?? d.favorite ?? false),
   storagePath: typeof d.storagePath === "string" ? d.storagePath : undefined,
+  // Upload baru via Cloudinary (tanpa Firebase Storage).
+  cloudinaryPublicId:
+    typeof d.cloudinaryPublicId === "string" ? d.cloudinaryPublicId : undefined,
 });
 
 // Waktu upload dalam ms untuk sorting client-side.
@@ -153,6 +156,9 @@ export function usePhotos() {
       const target = photos.find((p) => p.id === id);
       if (live && db) {
         await deleteDoc(doc(db, "photos", id));
+        // Dokumen lama (Firebase Storage): hapus file binernya juga.
+        // Dokumen Cloudinary: file tetap ada di Media Library (delete butuh
+        // signed API) — hapus manual di Cloudinary jika perlu.
         if (target?.storagePath && storage) {
           try {
             await deleteObject(ref(storage, target.storagePath));

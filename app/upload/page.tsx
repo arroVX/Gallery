@@ -5,28 +5,84 @@ import { useDropzone } from "react-dropzone";
 import imageCompression from "browser-image-compression";
 import { motion } from "framer-motion";
 import { ALBUMS } from "@/lib/gallery";
-import { auth, db, isFirebaseConfigured, storage } from "@/lib/firebase";
+import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, type User } from "firebase/auth";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { useEffect } from "react";
 
 type Pick = { file: File; preview: string };
 
-// Ubah kode error Firebase menjadi pesan yang bisa ditindaklanjuti user.
+// File biner diupload ke Cloudinary (unsigned preset, tanpa kartu),
+// metadata-nya disimpan di Firestore. Firebase Storage tidak dipakai lagi.
+const CLOUDINARY_CLOUD_NAME =
+  process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "xivl9amq";
+const CLOUDINARY_UPLOAD_PRESET =
+  process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "gallery_unsigned";
+
+type CloudinaryResult = {
+  secureUrl: string;
+  width: number;
+  height: number;
+  publicId: string;
+};
+
+// Upload via XMLHttpRequest agar progress bar tetap hidup (fetch tidak ada progress upload).
+const uploadToCloudinary = (
+  blob: Blob,
+  filename: string,
+  folder: string,
+  onProgress: (fraction: number) => void
+): Promise<CloudinaryResult> =>
+  new Promise((resolve, reject) => {
+    const form = new FormData();
+    form.append("file", blob, filename);
+    form.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    form.append("folder", folder);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && e.total > 0) onProgress(e.loaded / e.total);
+    };
+    xhr.onload = () => {
+      try {
+        const json = JSON.parse(xhr.responseText);
+        if (xhr.status < 200 || xhr.status >= 300) {
+          const msg = json?.error?.message ?? `HTTP ${xhr.status}`;
+          reject(new Error(`Cloudinary: ${msg}`));
+          return;
+        }
+        if (!json.secure_url) {
+          reject(new Error("Cloudinary tidak mengembalikan secure_url."));
+          return;
+        }
+        resolve({
+          secureUrl: String(json.secure_url),
+          width: Number(json.width ?? 0),
+          height: Number(json.height ?? 0),
+          publicId: String(json.public_id ?? ""),
+        });
+      } catch (e) {
+        reject(e instanceof Error ? e : new Error(String(e)));
+      }
+    };
+    xhr.onerror = () => reject(new Error("Cloudinary: jaringan gagal."));
+    xhr.onabort = () => reject(new Error("Cloudinary: upload dibatalkan."));
+    xhr.send(form);
+  });
+
+// Ubah kode error menjadi pesan yang bisa ditindaklanjuti user.
 const friendlyError = (err: unknown): string => {
   const code = (err as { code?: string })?.code ?? "";
   const raw = err instanceof Error ? err.message : String(err);
-  if (code === "storage/unauthorized" || code === "permission-denied")
-    return `Izin ditolak (${code}). Pastikan sudah login DAN rules sudah di-deploy (firebase deploy --only firestore:rules,storage). Detail: ${raw}`;
-  if (code === "storage/unauthenticated" || code === "unauthenticated")
-    return `Belum login (${code}). Masuk dulu dengan akun yang terdaftar di Authentication. Detail: ${raw}`;
-  if (code === "storage/bucket-not-found" || code === "storage/project-not-found")
-    return `Bucket Storage tidak ditemukan (${code}). Cek NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET dan pastikan Storage sudah diaktifkan (Get started) di Console. Detail: ${raw}`;
-  if (code === "storage/quota-exceeded" || code === "storage/retry-limit-exceeded")
-    return `Kuota / jaringan Storage bermasalah (${code}). Coba lagi atau cek billing. Detail: ${raw}`;
-  if (code === "storage/canceled")
-    return "Upload dibatalkan. Coba lagi.";
+  if (raw.startsWith("Cloudinary:")) {
+    if (raw.includes("unknown preset") || raw.includes("Invalid upload preset"))
+      return `Cloudinary menolak preset (${CLOUDINARY_UPLOAD_PRESET}). Cek Settings > Upload > Upload presets — harus Unsigned. Detail: ${raw}`;
+    return `Upload gambar gagal. ${raw}`;
+  }
+  if (code === "permission-denied")
+    return `Firestore menolak tulis (permission-denied). Pastikan sudah login DAN rules Firestore sudah di-Publish. Detail: ${raw}`;
+  if (code === "unauthenticated")
+    return `Belum login (unauthenticated). Masuk dulu dengan akun yang terdaftar di Authentication. Detail: ${raw}`;
   if (code === "auth/operation-not-allowed")
     return "Login gagal (auth/operation-not-allowed). Aktifkan Email/Password di Console > Authentication > Sign-in method.";
   if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential")
@@ -36,7 +92,7 @@ const friendlyError = (err: unknown): string => {
   if (code === "failed-precondition")
     return `Firestore butuh index (failed-precondition). Klik link index di console browser. Detail: ${raw}`;
   if (code === "unavailable")
-    return "Firestore/Storage tidak dapat dijangkau (unavailable). Pastikan database sudah dibuat dan koneksi stabil.";
+    return "Firestore tidak dapat dijangkau (unavailable). Pastikan database sudah dibuat dan koneksi stabil.";
   return `Upload gagal: ${raw}`;
 };
 
@@ -96,75 +152,55 @@ export default function UploadPage() {
     // Diagnostik: tunjukkan kondisi mana yang gagal
     if (!isFirebaseConfigured) return setError("❌ Firebase belum terkonfigurasi — cek env NEXT_PUBLIC_FIREBASE_*");
     if (!db) return setError("❌ Firestore (db) null — Firebase gagal inisialisasi");
-    if (!storage) return setError("❌ Storage null — cek FIREBASE_STORAGE_BUCKET atau error di console");
     if (!auth?.currentUser) return setError("❌ Belum login — silakan masuk dulu");
     try {
       let doneCount = 0;
       for (const { file } of picks) {
+        // Kompresi ringan saja — Cloudinary free 25 GB, kualitas HD dipertahankan.
         const compressed = await imageCompression(file, {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 1600,
+          maxSizeMB: 4,
+          maxWidthOrHeight: 2400,
           useWebWorker: true,
         });
-        let width = 800;
-        let height = 1000;
-        try {
-          const bmp = await createImageBitmap(compressed);
-          width = bmp.width;
-          height = bmp.height;
-          bmp.close();
-        } catch {
-          // abaikan, pakai default
-        }
-        // Pakai tipe asli hasil kompresi (bukan hardcode jpeg) agar lolos
-        // storage.rules `image/.*` dan tidak merusak PNG/WebP.
-        const contentType = compressed.type || file.type || "image/jpeg";
         const safeName = sanitizeName(file.name);
-        const path = `photos/${takenAt.slice(0, 7)}/${Date.now()}-${safeName}`;
-        const r = ref(storage, path);
-        const task = uploadBytesResumable(r, compressed, { contentType });
-        const url: string = await new Promise((resolve, reject) => {
-          task.on(
-            "state_changed",
-            (s) =>
-              setProgress(
-                Math.round(
-                  ((doneCount + s.bytesTransferred / s.totalBytes) / picks.length) * 100
-                )
-              ),
-            reject,
-            async () => {
-              try {
-                resolve(await getDownloadURL(task.snapshot.ref));
-              } catch (e) {
-                reject(e);
-              }
-            }
-          );
-        });
-        try {
-          await addDoc(collection(db, "photos"), {
-            imageUrl: url,
-            storagePath: path,
-            width,
-            height,
-            caption: caption || file.name,
-            location,
-            takenAt,
-            album,
-            uploadedAt: serverTimestamp(),
-            isFavorite: false,
-          });
-        } catch (e) {
-          // addDoc gagal setelah file terupload -> hapus file yatim agar
-          // bucket tidak penuh file yang tidak tampil di galeri.
+        const folder = `gallery/${takenAt.slice(0, 7)}`;
+        const up = await uploadToCloudinary(
+          compressed,
+          safeName,
+          folder,
+          (frac) =>
+            setProgress(
+              Math.round(((doneCount + frac) / picks.length) * 100)
+            )
+        );
+        // Dimensi dari respon Cloudinary; fallback ke bitmap lokal.
+        let width = up.width || 800;
+        let height = up.height || 1000;
+        if (!up.width || !up.height) {
           try {
-            await deleteObject(r);
+            const bmp = await createImageBitmap(compressed);
+            width = bmp.width;
+            height = bmp.height;
+            bmp.close();
           } catch {
-            // abaikan, file yatim bisa dihapus manual
+            // abaikan, pakai default
           }
-          throw e;
         }
+        // Catatan: kalau addDoc gagal setelah file terupload, file yatim
+        // tetap ada di Cloudinary (delete butuh signed API) — hapus manual
+        // di Media Library bila perlu. public_id disimpan untuk itu.
+        await addDoc(collection(db, "photos"), {
+          imageUrl: up.secureUrl,
+          cloudinaryPublicId: up.publicId,
+          width,
+          height,
+          caption: caption || file.name,
+          location,
+          takenAt,
+          album,
+          uploadedAt: serverTimestamp(),
+          isFavorite: false,
+        });
         doneCount++;
       }
       setProgress(null);

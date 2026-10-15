@@ -9,6 +9,7 @@ export type Photo = {
   album: string;
   favorite?: boolean;
   storagePath?: string;
+  cloudinaryPublicId?: string;
 };
 
 export const ALBUMS = ["Semua", "Kencan", "Trip", "Harian"] as const;
