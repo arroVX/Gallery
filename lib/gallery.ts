@@ -53,16 +53,29 @@ export const photoById = (id: string): Photo =>
   PHOTOS.find((p) => p.id === id) ?? PHOTOS[0];
 
 // Thumbnail ringan untuk URL Cloudinary: sisipkan transformasi
-// `w_{width},q_auto,f_auto` tepat setelah `/image/upload/`.
+// `w_{width},q_auto,f_auto,a_auto` tepat setelah `/image/upload/`.
+// `a_auto` memutar piksel sesuai EXIF agar foto HP tidak miring.
 // Bukan URL Cloudinary (atau sudah ada transformasi) -> kembalikan asli.
-// Dipakai di grid/kartu; popup detail tetap URL penuh.
+// Dipakai di grid/kartu; popup detail pakai `full`.
 export const thumb = (src: string, width = 400): string => {
   const marker = "/image/upload/";
   const i = src.indexOf(marker);
   if (!src.startsWith("https://res.cloudinary.com/") || i < 0) return src;
   const rest = src.slice(i + marker.length);
   if (/^[a-z]+_[^/]*\//.test(rest)) return src;
-  return `${src.slice(0, i + marker.length)}w_${width},q_auto,f_auto/${rest}`;
+  return `${src.slice(0, i + marker.length)}w_${width},q_auto,f_auto,a_auto/${rest}`;
+};
+
+// Versi penuh untuk popup detail: kualitas/format otomatis +
+// auto-rotasi EXIF (`a_auto`) agar foto HP tidak tampil miring.
+// Tanpa resize agar ketajaman HD tetap. Bukan URL Cloudinary -> asli.
+export const full = (src: string): string => {
+  const marker = "/image/upload/";
+  const i = src.indexOf(marker);
+  if (!src.startsWith("https://res.cloudinary.com/") || i < 0) return src;
+  const rest = src.slice(i + marker.length);
+  if (/^[a-z]+_[^/]*\//.test(rest)) return src;
+  return `${src.slice(0, i + marker.length)}q_auto,f_auto,a_auto/${rest}`;
 };
 
 export const formatDate = (iso: string) =>

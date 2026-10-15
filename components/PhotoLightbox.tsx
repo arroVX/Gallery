@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ALBUMS, formatDate, type Photo } from "@/lib/gallery";
+import { ALBUMS, formatDate, full, type Photo } from "@/lib/gallery";
 import { usePhotos, useTimeline, useUser, type PhotoPatch } from "@/lib/store";
 
 const MIN_ZOOM = 1;
@@ -122,9 +122,11 @@ export default function PhotoLightbox({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  // ── Zoom & pan state ──
+  // ── Zoom, pan, rotate & focus state ──
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [rotation, setRotation] = useState(0); // 0 / 90 / 180 / 270
+  const [focus, setFocus] = useState(false); // mode foto penuh (panel info disembunyikan)
   const [dragging, setDragging] = useState(false);
   const frameRef = useRef<HTMLDivElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
@@ -136,6 +138,8 @@ export default function PhotoLightbox({
     setConfirming(false);
     setZoom(1);
     setPan({ x: 0, y: 0 });
+    setRotation(0);
+    setFocus(false);
     pointers.current.clear();
     pinchDist.current = null;
   }, [photo?.id]);
@@ -158,6 +162,11 @@ export default function PhotoLightbox({
 
   const resetZoom = useCallback(() => {
     setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }, []);
+
+  const rotate = useCallback(() => {
+    setRotation((r) => (r + 90) % 360);
     setPan({ x: 0, y: 0 });
   }, []);
 
@@ -300,7 +309,7 @@ export default function PhotoLightbox({
             >
               ✕
             </button>
-            <div className="grid sm:grid-cols-[1.25fr_1fr]">
+            <div className={focus ? "grid" : "grid sm:grid-cols-[1.25fr_1fr]"}>
               {/* ── Zoomable photo frame ── */}
               <div
                 ref={frameRef}
@@ -320,19 +329,19 @@ export default function PhotoLightbox({
                 <div
                   className="flex h-full w-full items-center justify-center"
                   style={{
-                    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                    transform: `translate(${pan.x}px, ${pan.y}px) rotate(${rotation}deg) scale(${zoom})`,
                     transformOrigin: "center center",
                     transition: dragging ? "none" : "transform 160ms ease-out",
                   }}
                 >
                   <Image
                     key={photo.id}
-                    src={photo.src}
+                    src={full(photo.src)}
                     alt={photo.caption}
                     width={photo.width}
                     height={photo.height}
                     sizes="(max-width: 640px) 100vw, 560px"
-                    className="h-auto max-h-[55dvh] w-full object-contain sm:max-h-[72dvh]"
+                    className={`h-auto w-full object-contain ${focus ? "max-h-[80dvh]" : "max-h-[55dvh] sm:max-h-[72dvh]"}`}
                     priority
                     draggable={false}
                   />
@@ -366,6 +375,22 @@ export default function PhotoLightbox({
                   >
                     +
                   </button>
+                  <button
+                    onClick={rotate}
+                    className="border-l-2 border-black px-2.5 py-1.5 text-[14px] font-extrabold"
+                    aria-label="Putar 90 derajat"
+                    title="Putar"
+                  >
+                    ⟳
+                  </button>
+                  <button
+                    onClick={() => setFocus((f) => !f)}
+                    className="border-l-2 border-black bg-black px-2.5 py-1.5 text-[12px] font-extrabold text-white"
+                    aria-label="Mode foto penuh"
+                    title="Foto penuh"
+                  >
+                    {focus ? "✕" : "⛶"}
+                  </button>
                   {zoom > 1 && (
                     <button
                       onClick={resetZoom}
@@ -377,10 +402,37 @@ export default function PhotoLightbox({
                   )}
                 </div>
                 <p className="absolute bottom-3 left-3 border border-white/60 bg-black/70 px-2 py-1 text-[9px] font-bold tracking-[0.14em] text-white">
-                  {zoom > 1 ? "GESER UNTUK JELAJAH" : "KETUK 2× / SCROLL / CUBIT UNTUK ZOOM"}
+                  {zoom > 1 ? "GESER UNTUK JELAJAH" : "KETUK 2× / CUBIT: ZOOM • ⟳: PUTAR"}
                 </p>
+                {focus && (
+                  <>
+                    <button
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        prev();
+                      }}
+                      className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-black bg-white text-[18px] font-extrabold"
+                      aria-label="Foto sebelumnya"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        next();
+                      }}
+                      className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-black bg-white text-[18px] font-extrabold"
+                      aria-label="Foto berikutnya"
+                    >
+                      ›
+                    </button>
+                  </>
+                )}
               </div>
 
+              {!focus && (
               <div className="p-5 sm:p-6">
                 <p className="text-[11px] font-bold tracking-widest text-charcoal/50">
                   {formatDate(photo.takenAt).toUpperCase()} — {photo.album.toUpperCase()}
@@ -460,6 +512,7 @@ export default function PhotoLightbox({
                   </button>
                 </div>
               </div>
+              )}
             </div>
           </motion.div>
         </div>
