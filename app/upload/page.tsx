@@ -250,7 +250,7 @@ export default function UploadPage() {
           UPLOAD!
         </h1>
         <p className="border-t-[3px] border-black py-2 text-center font-serif text-[12px] italic">
-          Tambah kenangan baru — otomatis dikompres sebelum tersimpan.
+          Tambah kenangan baru ♥
         </p>
       </div>
 

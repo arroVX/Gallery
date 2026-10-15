@@ -33,10 +33,10 @@ export default function SiteHeader() {
       {/* masthead */}
       <div className="stripes-blue flex items-center justify-between border-b-[3px] border-black px-3 py-3 sm:px-5">
         <Link href="/" className="font-display leading-none tracking-wide text-[clamp(2.125rem,9vw,2.75rem)]">
-          KITA<span className="align-super text-[18px] text-raspberry">.</span>
+          GALLERY<span className="align-super text-[18px] text-raspberry">.</span>
         </Link>
-        <p className="sticker hidden -rotate-3 border-2 border-black bg-white px-4 py-1.5 font-hand text-[16px] font-bold md:block">
-          our digital scrapbook ♥
+        <p className="hidden max-w-[220px] text-right font-hand text-[18px] font-semibold leading-tight md:block">
+          captured moments ♥
         </p>
         <button
           onClick={() => setOpen((v) => !v)}

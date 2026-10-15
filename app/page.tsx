@@ -75,10 +75,6 @@ export default function Home() {
               </li>
             ))}
           </ul>
-          <p className="mx-auto max-w-[38ch] px-6 py-5 text-center font-serif text-[12.5px] italic leading-relaxed">
-            Having a friend is a real privilege and if you forget about them you run the risk
-            of becoming like older people who are only interested in figures and numbers.
-          </p>
           <div className="mx-auto mb-5 w-fit border-2 border-black px-8 py-1 text-[11px] font-bold">
             note: {daysTogether} days together
           </div>
@@ -164,11 +160,6 @@ export default function Home() {
           <div className="flex flex-1 flex-col items-center justify-center px-6 py-6">
             <p className="font-script leading-none text-dustydeep text-[clamp(2.625rem,11vw,3.375rem)]">My sweet</p>
             <p className="font-script leading-none text-dustydeep text-[clamp(1.875rem,8vw,2.375rem)]">heart</p>
-            <p className="mx-auto mt-4 max-w-[34ch] text-center font-serif text-[10.5px] leading-relaxed">
-              When you find a diamond that doesn&apos;t belong to anyone, it&apos;s yours. When you
-              find an island that doesn&apos;t belong to anyone, it&apos;s yours. The stars are
-              ours because no one before us ever dreamed of owning them.
-            </p>
             <Link
               href="/gallery"
               className="mt-5 border-2 border-black bg-black px-6 py-2 text-[11px] font-extrabold tracking-[0.2em] text-white"
@@ -203,7 +194,7 @@ export default function Home() {
 
       {/* ── FOOTER STRIP ── */}
       <div className="mt-4 border-[3px] border-black bg-black py-2 text-center text-[10px] font-extrabold tracking-[0.3em] text-white">
-        KITA ★ BEYOND COLOR ★ PURE EMOTION ★ {daysTogether} DAYS
+        GALLERY ★ {daysTogether} DAYS
       </div>
 
       <PhotoLightbox photos={picks} index={pickIndex} onClose={() => setPickIndex(null)} onNav={setPickIndex} />

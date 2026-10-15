@@ -12,8 +12,8 @@ const sans = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700", 
 const hand = Caveat({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-hand" });
 
 export const metadata: Metadata = {
-  title: "KITA — Galeri Koran Kita",
-  description: "Galeri foto retro newspaper untuk kita berdua.",
+  title: "GALLERY — Galeri Kita Berdua",
+  description: "Galeri foto scrapbook untuk kita berdua.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

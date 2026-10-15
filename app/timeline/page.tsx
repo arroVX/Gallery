@@ -12,9 +12,6 @@ export default function TimelinePage() {
         <h1 className="py-4 text-center font-display leading-none text-[clamp(2.625rem,11vw,4rem)]">
           CERITA KITA!
         </h1>
-        <p className="border-t-[3px] border-black py-2 text-center font-serif text-[12px] italic">
-          Gulir pelan-pelan. Setiap titik adalah satu bab kecil kita.
-        </p>
       </div>
       <div className="mx-auto mt-6 max-w-2xl">
         <TimelineView />

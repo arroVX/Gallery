@@ -39,9 +39,7 @@ export default function MemoriesPage() {
           OUR MOMENTS!
         </h1>
         <p className="border-t-[3px] border-black py-2 text-center font-hand text-[16px] font-semibold">
-          {events.length === 0
-            ? "Belum ada momen — bikin satu yuk ♥"
-            : `${events.length} momen, ${all.length} foto — ketuk kartu untuk slide.`}
+          {events.length === 0 ? "Belum ada momen — bikin satu yuk ♥" : `${events.length} momen • ${all.length} foto`}
         </p>
       </div>
 

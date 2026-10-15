@@ -40,9 +40,7 @@ export default function GalleryPage() {
           PHOTO GALLERY!
         </h1>
         <p className="border-t-[3px] border-black py-2 text-center font-hand text-[16px] font-semibold">
-          {live && photos.length === 0
-            ? "Belum ada foto — upload dulu yuk ♥"
-            : `${photos.length} foto tersimpan rapi — captured moments from our trips.`}
+          {live && photos.length === 0 ? "Belum ada foto — upload dulu yuk ♥" : `${photos.length} foto`}
         </p>
       </div>
 
