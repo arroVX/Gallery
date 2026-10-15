@@ -307,12 +307,12 @@ export default function PhotoLightbox({
                   toggleZoom();
                 }}
                 style={{ touchAction: zoom > 1 ? "none" : "pan-y" }}
-                className={`relative min-h-[320px] select-none overflow-hidden border-b-[3px] border-black bg-black sm:min-h-[480px] sm:border-b-0 sm:border-r-[3px] ${
+                className={`relative flex min-h-[320px] select-none items-center justify-center overflow-hidden border-b-[3px] border-black bg-black sm:min-h-[480px] sm:border-b-0 sm:border-r-[3px] ${
                   zoom === 1 ? "cursor-zoom-in" : dragging ? "cursor-grabbing" : "cursor-grab"
                 }`}
               >
                 <div
-                  className="h-full w-full"
+                  className="flex h-full w-full items-center justify-center"
                   style={{
                     transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                     transformOrigin: "center center",
@@ -326,7 +326,7 @@ export default function PhotoLightbox({
                     width={photo.width}
                     height={photo.height}
                     sizes="(max-width: 640px) 100vw, 560px"
-                    className="h-full max-h-[46dvh] w-full object-cover sm:max-h-none sm:min-h-[480px]"
+                    className="h-auto max-h-[55dvh] w-full object-contain sm:max-h-[72dvh]"
                     priority
                     draggable={false}
                   />
