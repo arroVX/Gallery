@@ -44,8 +44,8 @@ export default function MemoryCard({
       <button onClick={onOpen} className="block w-full p-2 text-left" aria-label={`Buka ${event.title}`}>
         {cover ? (
           <div className="overflow-hidden">
-            {/* Foto utama full-width, tinggi fix seperti kartu timeline */}
-            <div className="relative h-52 overflow-hidden border-2 border-black bg-black/10 sm:h-64">
+            {/* Foto utama full-width, rasio 4:3 seperti referensi */}
+            <div className="relative aspect-[4/3] w-full overflow-hidden border-2 border-black bg-black/10">
               <Image
                 src={thumb(cover.src, 800, cover.rotate ?? 0)}
                 alt={event.title}
@@ -60,7 +60,7 @@ export default function MemoryCard({
                 {rest.map((p, i) => (
                   <span
                     key={p.id}
-                    className="relative block h-16 overflow-hidden border-2 border-black bg-black/10 sm:h-20"
+                    className="relative block aspect-square w-full overflow-hidden border-2 border-black bg-black/10"
                   >
                     <Image
                       src={thumb(p.src, 300, p.rotate ?? 0)}
