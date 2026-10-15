@@ -9,6 +9,7 @@ import { signInWithEmailAndPassword, signOut, onAuthStateChanged, type User } fr
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { initFirebase, isFirebaseConfigured, firebaseInitError } from "@/lib/firebase";
 import { useEffect } from "react";
+import PhotoCropper from "@/components/PhotoCropper";
 
 type Pick = { file: File; preview: string };
 
@@ -111,6 +112,7 @@ export default function UploadPage() {
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [cropIndex, setCropIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const { auth } = initFirebase();
@@ -133,7 +135,25 @@ export default function UploadPage() {
     maxFiles: 10,
   });
 
-  const remove = (i: number) => setPicks((p) => p.filter((_, x) => x !== i));
+  const remove = (i: number) =>
+    setPicks((p) => {
+      const target = p[i];
+      if (target) URL.revokeObjectURL(target.preview);
+      return p.filter((_, x) => x !== i);
+    });
+
+  // Terapkan hasil crop: ganti file + preview pick terkait.
+  const applyCrop = (file: File) => {
+    if (cropIndex === null) return;
+    setPicks((prev) =>
+      prev.map((p, x) => {
+        if (x !== cropIndex) return p;
+        URL.revokeObjectURL(p.preview);
+        return { file, preview: URL.createObjectURL(file) };
+      })
+    );
+    setCropIndex(null);
+  };
 
   const login = async () => {
     setError(null);
@@ -281,7 +301,7 @@ export default function UploadPage() {
       >
         <input {...getInputProps()} />
         <p className="font-display text-[20px] tracking-wide">{isDragActive ? "LEPASKAN DI SINI" : "KETUK / SERET FOTO KE SINI"}</p>
-        <p className="mt-1 font-serif text-xs italic">Maks 10 foto, otomatis dikompres sebelum upload</p>
+        <p className="mt-1 font-serif text-xs italic">Maks 10 foto — ketuk ✂ untuk potong dulu bila perlu</p>
       </div>
 
       {picks.length > 0 && (
@@ -290,6 +310,13 @@ export default function UploadPage() {
             <motion.div key={p.preview} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative border-2 border-black bg-white p-1">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.preview} alt="pratinjau" className="h-24 w-full border border-black object-cover" />
+              <button
+                onClick={() => setCropIndex(i)}
+                className="absolute bottom-2 left-1 border-2 border-black bg-white px-2 py-0.5 text-[11px] font-extrabold"
+                aria-label="Potong foto"
+              >
+                ✂
+              </button>
               <button
                 onClick={() => remove(i)}
                 className="absolute right-1 top-1 border border-black bg-black px-2 py-0.5 text-[11px] font-bold text-white"
@@ -300,6 +327,15 @@ export default function UploadPage() {
             </motion.div>
           ))}
         </div>
+      )}
+
+      {cropIndex !== null && picks[cropIndex] && (
+        <PhotoCropper
+          src={picks[cropIndex].preview}
+          fileName={picks[cropIndex].file.name}
+          onCancel={() => setCropIndex(null)}
+          onSave={applyCrop}
+        />
       )}
 
       <div className="gridpaper mt-4 space-y-2 border-[3px] border-black p-4">
