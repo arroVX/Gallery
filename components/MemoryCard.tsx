@@ -36,8 +36,8 @@ export default function MemoryCard({
     <article className="border-[3px] border-black bg-white shadow-hardSm">
       <button onClick={onOpen} className="block w-full p-2 text-left" aria-label={`Buka ${event.title}`}>
         {cover ? (
-          <div className="grid h-44 grid-cols-5 gap-1.5 sm:h-56">
-            <span className="relative col-span-3 block h-full overflow-hidden border-2 border-black bg-black/10">
+          <div className="grid h-44 grid-cols-5 grid-rows-1 gap-1.5 sm:h-56">
+            <span className="relative col-span-3 block h-full min-h-0 min-w-0 overflow-hidden border-2 border-black bg-black/10">
               <Image
                 src={thumb(cover.src, 600)}
                 alt={event.title}
@@ -48,7 +48,7 @@ export default function MemoryCard({
                 loading="lazy"
               />
             </span>
-            <span className="col-span-2 grid h-full grid-rows-2 gap-1.5">
+            <span className="col-span-2 grid h-full min-h-0 min-w-0 grid-rows-2 gap-1.5">
               {rest.length > 0 ? (
                 rest.slice(0, 2).map((p, i) => (
                   <span key={p.id} className="relative block h-full min-h-0 overflow-hidden border-2 border-black bg-black/10">
