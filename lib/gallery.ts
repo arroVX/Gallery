@@ -52,6 +52,19 @@ export const TIMELINE: TimelineEvent[] = [
 export const photoById = (id: string): Photo =>
   PHOTOS.find((p) => p.id === id) ?? PHOTOS[0];
 
+// Thumbnail ringan untuk URL Cloudinary: sisipkan transformasi
+// `w_{width},q_auto,f_auto` tepat setelah `/image/upload/`.
+// Bukan URL Cloudinary (atau sudah ada transformasi) -> kembalikan asli.
+// Dipakai di grid/kartu; popup detail tetap URL penuh.
+export const thumb = (src: string, width = 400): string => {
+  const marker = "/image/upload/";
+  const i = src.indexOf(marker);
+  if (!src.startsWith("https://res.cloudinary.com/") || i < 0) return src;
+  const rest = src.slice(i + marker.length);
+  if (/^[a-z]+_[^/]*\//.test(rest)) return src;
+  return `${src.slice(0, i + marker.length)}w_${width},q_auto,f_auto/${rest}`;
+};
+
 export const formatDate = (iso: string) =>
   new Date(iso + "T00:00:00").toLocaleDateString("id-ID", {
     day: "numeric",

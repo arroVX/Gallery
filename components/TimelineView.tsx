@@ -4,7 +4,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useScroll, useSpring } from "framer-motion";
-import { formatDate, photoById } from "@/lib/gallery";
+import { formatDate, photoById, thumb } from "@/lib/gallery";
 import { usePhotos, useTimeline } from "@/lib/store";
 
 export default function TimelineView() {
@@ -56,7 +56,7 @@ export default function TimelineView() {
               <div className="p-2">
                 <div className="border-2 border-black">
                   <Image
-                    src={cover.src}
+                    src={thumb(cover.src, 800)}
                     alt={ev.title}
                     width={cover.width}
                     height={cover.height}

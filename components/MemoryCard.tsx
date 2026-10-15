@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { formatDate, type Photo, type TimelineEvent } from "@/lib/gallery";
+import { formatDate, thumb, type Photo, type TimelineEvent } from "@/lib/gallery";
 
 export function resolveMemoryPhotos(
   event: TimelineEvent,
@@ -39,7 +39,7 @@ export default function MemoryCard({
           <div className="grid grid-cols-5 gap-1.5">
             <span className="relative col-span-3 block overflow-hidden border-2 border-black">
               <Image
-                src={cover.src}
+                src={thumb(cover.src, 600)}
                 alt={event.title}
                 width={cover.width}
                 height={cover.height}
@@ -53,7 +53,7 @@ export default function MemoryCard({
                 rest.slice(0, 2).map((p, i) => (
                   <span key={p.id} className="relative block overflow-hidden border-2 border-black">
                     <Image
-                      src={p.src}
+                      src={thumb(p.src, 300)}
                       alt={p.caption}
                       width={p.width}
                       height={p.height}

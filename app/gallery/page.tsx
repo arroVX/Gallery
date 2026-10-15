@@ -8,14 +8,19 @@ import GalleryGrid from "@/components/GalleryGrid";
 import PhotoLightbox from "@/components/PhotoLightbox";
 
 export default function GalleryPage() {
-  const [album, setAlbum] = useState<(typeof ALBUMS)[number]>("Semua");
+  const [album, setAlbum] = useState<(typeof ALBUMS)[number] | "Favorit">("Semua");
+  const [query, setQuery] = useState("");
   const [index, setIndex] = useState<number | null>(null);
   const { photos: all, live, loading, error } = usePhotos();
 
-  const photos = useMemo(
-    () => (album === "Semua" ? all : all.filter((p) => p.album === album)),
-    [album, all]
-  );
+  const photos = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return all.filter((p) => {
+      if (album === "Favorit" ? !p.favorite : album !== "Semua" && p.album !== album) return false;
+      if (q && !`${p.caption} ${p.location}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [album, query, all]);
 
   useEffect(() => {
     if (index !== null && index >= photos.length) {
@@ -39,18 +44,27 @@ export default function GalleryPage() {
         </p>
       </div>
 
-      <div className="no-scrollbar -mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1">
-        {ALBUMS.map((a) => {
+      <div className="mt-4 border-[3px] border-black bg-white shadow-hardSm">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="🔍 Cari caption atau lokasi…"
+          className="w-full bg-white px-4 py-2.5 text-sm font-bold outline-none placeholder:font-serif placeholder:font-normal placeholder:italic placeholder:opacity-60"
+        />
+      </div>
+
+      <div className="no-scrollbar -mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1">
+        {[...ALBUMS, "Favorit"].map((a) => {
           const active = a === album;
           return (
             <button
               key={a}
-              onClick={() => setAlbum(a)}
+              onClick={() => setAlbum(a as (typeof ALBUMS)[number] | "Favorit")}
               className={`shrink-0 border-[2.5px] border-black px-5 py-2 text-[11px] font-extrabold tracking-[0.14em] transition ${
                 active ? "bg-black text-white shadow-hardSm" : "bg-white hover:bg-black/5"
               }`}
             >
-              {a.toUpperCase()}
+              {a === "Favorit" ? "★ FAVORIT" : a.toUpperCase()}
             </button>
           );
         })}
@@ -70,7 +84,7 @@ export default function GalleryPage() {
       ) : (
         <AnimatePresence mode="wait">
           <motion.div
-            key={album}
+            key={`${album}-${query}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}

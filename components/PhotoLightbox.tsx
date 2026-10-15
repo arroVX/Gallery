@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ALBUMS, formatDate, type Photo } from "@/lib/gallery";
-import { usePhotos, useUser, type PhotoPatch } from "@/lib/store";
+import { usePhotos, useTimeline, useUser, type PhotoPatch } from "@/lib/store";
 
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
@@ -109,8 +109,14 @@ export default function PhotoLightbox({
 }) {
   const photo: Photo | null = index === null ? null : photos[index] ?? null;
   const { live, updatePhoto, removePhoto } = usePhotos();
+  const { events } = useTimeline();
   const user = useUser();
   const canWrite = !live || !!user;
+  // Momen yang memakai foto aktif — untuk peringatan sebelum hapus.
+  const usedIn =
+    photo == null
+      ? []
+      : events.filter((e) => e.coverId === photo.id || e.photoIds.includes(photo.id));
 
   const [editing, setEditing] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -385,6 +391,7 @@ export default function PhotoLightbox({
                 <p className="mt-1 font-serif text-[13px] italic">{photo.location}</p>
 
                 {canWrite ? (
+                  <>
                   <div className="mt-4 flex gap-2">
                     <button
                       onClick={() => {
@@ -405,6 +412,15 @@ export default function PhotoLightbox({
                       {busy ? "Menghapus…" : confirming ? "Ketuk lagi untuk hapus" : "Hapus"}
                     </button>
                   </div>
+                  {confirming && usedIn.length > 0 && (
+                    <p className="mt-2 border-2 border-amber-500 bg-amber-50 p-2 text-[12px] font-bold text-amber-900">
+                      ⚠ Foto ini dipakai di {usedIn.length} momen (
+                      {usedIn.slice(0, 2).map((e) => e.title).join(", ")}
+                      {usedIn.length > 2 ? "…" : ""}) — momennya tidak ikut terhapus, tapi kartunya
+                      akan kehilangan foto ini.
+                    </p>
+                  )}
+                  </>
                 ) : (
                   <p className="mt-4 rounded-xl bg-black/[0.04] px-3 py-2 text-center text-xs font-semibold text-charcoal/60">
                     <Link href="/upload" className="font-bold text-charcoal underline">

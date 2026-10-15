@@ -11,6 +11,7 @@ import {
 } from "firebase/auth";
 import { addMemory, removeMemory, usePhotos, useTimeline } from "@/lib/store";
 import { resolveMemoryPhotos } from "@/components/MemoryCard";
+import { thumb } from "@/lib/gallery";
 
 export default function KelolaMemoriesPage() {
   const { photos: all } = usePhotos();
@@ -194,7 +195,7 @@ export default function KelolaMemoriesPage() {
                   >
                     <button onClick={() => toggle(p.id)} className="block w-full" aria-label={`Pilih ${p.caption}`}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.src} alt={p.caption} className="h-20 w-full border border-black object-cover" loading="lazy" />
+                      <img src={thumb(p.src, 300)} alt={p.caption} className="h-20 w-full border border-black object-cover" loading="lazy" />
                     </button>
                     {active && (
                       <button

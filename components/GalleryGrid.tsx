@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import type { Photo } from "@/lib/gallery";
 import { formatDate } from "@/lib/gallery";
+import { thumb } from "@/lib/gallery";
 
 export default function GalleryGrid({
   photos,
@@ -39,7 +40,7 @@ export default function GalleryGrid({
           >
             <span className="block border-2 border-black">
               <Image
-                src={p.src}
+                src={thumb(p.src)}
                 alt={p.caption}
                 width={p.width}
                 height={p.height}
