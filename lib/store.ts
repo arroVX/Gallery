@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { deleteObject, ref } from "firebase/storage";
-import { firebase, initFirebase, isFirebaseConfigured } from "./firebase";
+import { firebase, initFirebase, isFirebaseConfigured, firebaseInitError } from "./firebase";
 import { PHOTOS, TIMELINE, type Photo, type TimelineEvent } from "./gallery";
 
 const asISODate = (v: unknown): string => {
@@ -116,6 +116,11 @@ export function usePhotos() {
     const { db } = initFirebase();
     if (!isFirebaseConfigured || !db) {
       setLoading(false);
+      if (isFirebaseConfigured && !db) {
+        setError(
+          `Firestore gagal inisialisasi — ${firebaseInitError ?? "penyebab tidak diketahui."}`
+        );
+      }
       return;
     }
     // Sengaja TANPA orderBy server-side: dokumen lama tanpa `uploadedAt`
@@ -191,7 +196,14 @@ export function useTimeline() {
   useEffect(() => {
     // initFirebase() di sini memastikan db terinisialisasi di browser, bukan SSR.
     const { db } = initFirebase();
-    if (!isFirebaseConfigured || !db) return;
+    if (!isFirebaseConfigured || !db) {
+      if (isFirebaseConfigured && !db) {
+        setError(
+          `Firestore gagal inisialisasi — ${firebaseInitError ?? "penyebab tidak diketahui."}`
+        );
+      }
+      return;
+    }
     const q = query(collection(db, "timeline_events"), limit(100));
     const unsub = onSnapshot(
       q,

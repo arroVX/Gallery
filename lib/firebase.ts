@@ -27,6 +27,16 @@ export const firebase = {
 
 let _ready = false;
 
+// Pesan error init pertama — ditampilkan ke user agar "db null"
+// tidak pernah lagi jadi misteri tanpa petunjuk.
+export let firebaseInitError: string | null = null;
+
+const noteInitError = (where: string, err: unknown) => {
+  const msg = err instanceof Error ? err.message : String(err);
+  console.error(`[Firebase] ${where} gagal:`, err);
+  if (!firebaseInitError) firebaseInitError = `${where}: ${msg}`;
+};
+
 /**
  * Inisialisasi Firebase — idempotent, aman dipanggil berkali-kali.
  *
@@ -41,27 +51,31 @@ let _ready = false;
  */
 export function initFirebase(): typeof firebase {
   if (_ready) return firebase;
-  if (!isFirebaseConfigured) return firebase;
+  if (!isFirebaseConfigured) {
+    firebaseInitError =
+      "Env NEXT_PUBLIC_FIREBASE_* tidak lengkap (apiKey/projectId/appId/storageBucket).";
+    return firebase;
+  }
 
   try {
     firebase.app = getApps().length
       ? getApps()[0]!
       : initializeApp(config as Record<string, string>);
   } catch (err) {
-    console.error("[Firebase] initializeApp gagal:", err);
+    noteInitError("initializeApp", err);
     return firebase;
   }
 
   try {
     firebase.auth = getAuth(firebase.app);
   } catch (err) {
-    console.error("[Firebase] getAuth gagal:", err);
+    noteInitError("getAuth", err);
   }
 
   try {
     firebase.db = getFirestore(firebase.app);
   } catch (err) {
-    console.error("[Firebase] getFirestore gagal:", err);
+    noteInitError("getFirestore", err);
   }
 
   try {
@@ -69,7 +83,7 @@ export function initFirebase(): typeof firebase {
     const uri = bucket.startsWith("gs://") ? bucket : `gs://${bucket}`;
     firebase.storage = getStorage(firebase.app, uri);
   } catch (err) {
-    console.error("[Firebase] getStorage gagal:", err);
+    noteInitError("getStorage", err);
   }
 
   _ready = true;

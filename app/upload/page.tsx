@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { ALBUMS } from "@/lib/gallery";
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, type User } from "firebase/auth";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { initFirebase, isFirebaseConfigured } from "@/lib/firebase";
+import { initFirebase, isFirebaseConfigured, firebaseInitError } from "@/lib/firebase";
 import { useEffect } from "react";
 
 type Pick = { file: File; preview: string };
@@ -154,7 +154,10 @@ export default function UploadPage() {
     if (!isFirebaseConfigured) return setError("❌ Firebase belum terkonfigurasi — cek env NEXT_PUBLIC_FIREBASE_*");
     // Panggil initFirebase() di sini agar db/auth pasti terinisialisasi di browser.
     const { db, auth } = initFirebase();
-    if (!db) return setError("❌ Firestore gagal inisialisasi — cek console browser untuk detail error.");
+    if (!db)
+      return setError(
+        `❌ Firestore gagal inisialisasi — ${firebaseInitError ?? "penyebab tidak diketahui, cek console browser."}`
+      );
     if (!auth?.currentUser) return setError("❌ Belum login — silakan masuk dulu");
     try {
       let doneCount = 0;
