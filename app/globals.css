@@ -12,17 +12,12 @@
 
 html {
   -webkit-tap-highlight-color: transparent;
-  max-width: 100%;
-  overflow-x: hidden;
 }
 
 body {
   background: var(--paper);
   color: var(--charcoal);
   font-family: Manrope, system-ui, sans-serif;
-  overscroll-behavior-y: none;
-  max-width: 100%;
-  overflow-x: hidden;
 }
 
 ::selection {

@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SmoothScroll>
           <NotifyProvider>
             <FloatingDoodles />
-            <div className="relative min-h-dvh overflow-x-clip px-2 py-3 sm:px-4">
+            <div className="relative min-h-dvh px-2 py-3 sm:px-4">
               <div className="mx-auto min-h-[calc(100dvh-1.5rem)] w-full max-w-5xl border-[3px] border-black bg-ivory shadow-hard">
                 <SiteHeader />
                 <div className="pb-32 md:pb-10">{children}</div>
