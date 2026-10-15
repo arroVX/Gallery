@@ -32,7 +32,7 @@ const config: Config = {
       fontFamily: {
         serif: ['"Playfair Display"', "Georgia", "serif"],
         sans: ["Manrope", "system-ui", "sans-serif"],
-        hand: ["Caveat", "cursive"],
+        hand: ["Caveat", "'Segoe Script'", "'Comic Sans MS'", "'Chalkboard SE'", "cursive"],
         display: ['"Anton"', "Arial Black", "sans-serif"],
         script: ['"Great Vibes"', "cursive"],
       },
