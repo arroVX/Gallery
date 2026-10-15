@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { TIMELINE, formatDate } from "@/lib/gallery";
 import { usePhotos } from "@/lib/store";
 import PhotoLightbox from "@/components/PhotoLightbox";
+import Marquee from "@/components/Marquee";
 
 const START = new Date("2024-02-14T00:00:00");
 const daysTogether = Math.max(
@@ -90,6 +91,9 @@ export default function Home() {
       </section>
 
       {/* ── PHOTO STRIP: 3 cards + label bars ── */}
+      <div className="mt-4">
+        <Marquee items={["GALLERY", "OUR MOMENTS", "EST. 2024", "KITA BERDUA"]} />
+      </div>
       <section className="mt-4 grid grid-cols-3 gap-2 sm:gap-4">
         {strip.map((p, i) => (
           <motion.figure
@@ -193,6 +197,9 @@ export default function Home() {
       </section>
 
       {/* ── FOOTER STRIP ── */}
+      <div className="mt-4">
+        <Marquee items={["PURE EMOTION", "BEYOND COLOR", "OUR STORY"]} speed={26} reverse />
+      </div>
       <div className="mt-4 border-[3px] border-black bg-black py-2 text-center text-[10px] font-extrabold tracking-[0.3em] text-white">
         GALLERY ★ {daysTogether} DAYS
       </div>

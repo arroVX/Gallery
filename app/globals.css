@@ -90,4 +90,49 @@ body {
     border-radius: 9999px;
     box-shadow: 2px 2px 0 0 #5c1a24;
   }
+  /* Doodle melayang di background — murni CSS, murah di baterai */
+  .doodle-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .doodle-layer span {
+    position: absolute;
+    display: block;
+    opacity: 0.35;
+    animation: float-up linear infinite;
+  }
+  @keyframes float-up {
+    from {
+      transform: translateY(15vh) rotate(-8deg);
+    }
+    to {
+      transform: translateY(-110vh) rotate(10deg);
+    }
+  }
+  /* Pita teks berjalan */
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee var(--marquee-speed, 22s) linear infinite;
+  }
+  .marquee-reverse .marquee-track {
+    animation-direction: reverse;
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .doodle-layer span,
+    .marquee-track {
+      animation: none;
+    }
+  }
 }
