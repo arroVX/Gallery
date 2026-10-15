@@ -44,7 +44,7 @@ export default function GalleryGrid({
           >
             <span className="block border-2 border-black bg-black/10">
               <Image
-                src={thumb(p.src)}
+                src={thumb(p.src, 400, p.rotate ?? 0)}
                 alt={p.caption}
                 width={p.width}
                 height={p.height}

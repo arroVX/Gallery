@@ -10,6 +10,8 @@ export type Photo = {
   favorite?: boolean;
   storagePath?: string;
   cloudinaryPublicId?: string;
+  /** Rotasi permanen pilihan user: 0 / 90 / 180 / 270 derajat. */
+  rotate?: number;
 };
 
 export const ALBUMS = ["Semua", "Kencan", "Trip", "Harian"] as const;
@@ -52,30 +54,40 @@ export const TIMELINE: TimelineEvent[] = [
 export const photoById = (id: string): Photo =>
   PHOTOS.find((p) => p.id === id) ?? PHOTOS[0];
 
+// Sudut putar user menjadi transformasi Cloudinary (digabung dgn a_auto).
+const angleOf = (rotate?: number): string => {
+  const r = ((Math.round(rotate ?? 0) % 360) + 360) % 360;
+  if (r === 90) return ",a_90";
+  if (r === 180) return ",a_180";
+  if (r === 270) return ",a_270";
+  return "";
+};
+
 // Thumbnail ringan untuk URL Cloudinary: sisipkan transformasi
-// `w_{width},q_auto,f_auto,a_auto` tepat setelah `/image/upload/`.
-// `a_auto` memutar piksel sesuai EXIF agar foto HP tidak miring.
+// `w_{width},q_auto,f_auto,a_auto[,a_90/180/270]` tepat setelah `/image/upload/`.
+// `a_auto` memutar piksel sesuai EXIF agar foto HP tidak miring,
+// sudut user diterapkan setelahnya.
 // Bukan URL Cloudinary (atau sudah ada transformasi) -> kembalikan asli.
 // Dipakai di grid/kartu; popup detail pakai `full`.
-export const thumb = (src: string, width = 400): string => {
+export const thumb = (src: string, width = 400, rotate = 0): string => {
   const marker = "/image/upload/";
   const i = src.indexOf(marker);
   if (!src.startsWith("https://res.cloudinary.com/") || i < 0) return src;
   const rest = src.slice(i + marker.length);
   if (/^[a-z]+_[^/]*\//.test(rest)) return src;
-  return `${src.slice(0, i + marker.length)}w_${width},q_auto,f_auto,a_auto/${rest}`;
+  return `${src.slice(0, i + marker.length)}w_${width},q_auto,f_auto,a_auto${angleOf(rotate)}/${rest}`;
 };
 
 // Versi penuh untuk popup detail: kualitas/format otomatis +
-// auto-rotasi EXIF (`a_auto`) agar foto HP tidak tampil miring.
+// auto-rotasi EXIF (`a_auto`) + sudut user agar foto miring permanen tegak.
 // Tanpa resize agar ketajaman HD tetap. Bukan URL Cloudinary -> asli.
-export const full = (src: string): string => {
+export const full = (src: string, rotate = 0): string => {
   const marker = "/image/upload/";
   const i = src.indexOf(marker);
   if (!src.startsWith("https://res.cloudinary.com/") || i < 0) return src;
   const rest = src.slice(i + marker.length);
   if (/^[a-z]+_[^/]*\//.test(rest)) return src;
-  return `${src.slice(0, i + marker.length)}q_auto,f_auto,a_auto/${rest}`;
+  return `${src.slice(0, i + marker.length)}q_auto,f_auto,a_auto${angleOf(rotate)}/${rest}`;
 };
 
 export const formatDate = (iso: string) =>

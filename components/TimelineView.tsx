@@ -57,7 +57,7 @@ export default function TimelineView() {
                 <span aria-hidden className="tape absolute -top-1 left-1/2 z-10 h-5 w-16 -translate-x-1/2 -rotate-2" />
                 <div className="border-2 border-black bg-black/10">
                   <Image
-                    src={thumb(cover.src, 800)}
+                    src={thumb(cover.src, 800, cover.rotate ?? 0)}
                     alt={ev.title}
                     width={cover.width}
                     height={cover.height}

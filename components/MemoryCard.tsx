@@ -47,7 +47,7 @@ export default function MemoryCard({
             {/* Foto utama full-width, tinggi fix seperti kartu timeline */}
             <div className="relative h-52 overflow-hidden border-2 border-black bg-black/10 sm:h-64">
               <Image
-                src={thumb(cover.src, 800)}
+                src={thumb(cover.src, 800, cover.rotate ?? 0)}
                 alt={event.title}
                 fill
                 sizes="(max-width: 768px) 90vw, 560px"
@@ -63,7 +63,7 @@ export default function MemoryCard({
                     className="relative block h-16 overflow-hidden border-2 border-black bg-black/10 sm:h-20"
                   >
                     <Image
-                      src={thumb(p.src, 300)}
+                      src={thumb(p.src, 300, p.rotate ?? 0)}
                       alt={p.caption ?? "foto"}
                       fill
                       sizes="(max-width: 768px) 28vw, 180px"

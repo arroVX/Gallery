@@ -228,6 +228,7 @@ export default function UploadPage() {
           album,
           uploadedAt: serverTimestamp(),
           isFavorite: false,
+          rotate: 0,
         });
         doneCount++;
       }

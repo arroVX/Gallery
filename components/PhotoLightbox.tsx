@@ -34,12 +34,13 @@ function EditForm({
   const [takenAt, setTakenAt] = useState(photo.takenAt);
   const [album, setAlbum] = useState(photo.album);
   const [favorite, setFavorite] = useState(!!photo.favorite);
+  const [rotation, setRotation] = useState(photo.rotate ?? 0);
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
     setSaving(true);
     try {
-      await onSave({ caption, location, takenAt, album, favorite });
+      await onSave({ caption, location, takenAt, album, favorite, rotate: rotation });
     } finally {
       setSaving(false);
     }
@@ -81,6 +82,28 @@ function EditForm({
           <span className="h-5 w-5 rounded-full bg-white" />
         </span>
       </button>
+      <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photo.src}
+          alt="pratinjau putar"
+          style={{ transform: `rotate(${rotation}deg)` }}
+          className="h-14 w-14 shrink-0 border border-black object-cover transition-transform"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-bold tracking-widest">PUTAR FOTO</p>
+          <p className="truncate font-serif text-[11px] italic opacity-70">
+            Tersimpan permanen — berlaku di semua halaman.
+          </p>
+        </div>
+        <button
+          onClick={() => setRotation((r) => (r + 90) % 360)}
+          className="shrink-0 border-2 border-black bg-white px-3 py-1.5 text-[15px] font-extrabold"
+          aria-label="Putar 90 derajat"
+        >
+          ⟳ {rotation}°
+        </button>
+      </div>
       <div className="flex gap-2">
         <button onClick={onCancel} className="flex-1 rounded-full border border-black/15 py-2.5 text-sm font-bold">
           Batal
@@ -341,7 +364,7 @@ export default function PhotoLightbox({
                 >
                   <Image
                     key={photo.id}
-                    src={full(photo.src)}
+                    src={full(photo.src, photo.rotate ?? 0)}
                     alt={photo.caption}
                     width={photo.width}
                     height={photo.height}

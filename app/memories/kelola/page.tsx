@@ -236,7 +236,7 @@ export default function KelolaMemoriesPage() {
                   >
                     <button onClick={() => toggle(p.id)} className="block w-full" aria-label={`Pilih ${p.caption}`}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={thumb(p.src, 300)} alt={p.caption} className="h-20 w-full border border-black object-cover" loading="lazy" />
+                      <img src={thumb(p.src, 300, p.rotate ?? 0)} alt={p.caption} className="h-20 w-full border border-black object-cover" loading="lazy" />
                     </button>
                     {active && (
                       <button

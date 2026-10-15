@@ -42,6 +42,7 @@ const toPhoto = (id: string, d: DocumentData): Photo => ({
   // Upload baru via Cloudinary (tanpa Firebase Storage).
   cloudinaryPublicId:
     typeof d.cloudinaryPublicId === "string" ? d.cloudinaryPublicId : undefined,
+  rotate: Number(d.rotate ?? 0) || 0,
 });
 
 // Waktu upload dalam ms untuk sorting client-side.
@@ -88,7 +89,7 @@ const toEvent = (id: string, d: DocumentData): TimelineEvent => ({
 });
 
 export type PhotoPatch = Partial<
-  Pick<Photo, "caption" | "location" | "takenAt" | "album" | "favorite">
+  Pick<Photo, "caption" | "location" | "takenAt" | "album" | "favorite" | "rotate">
 >;
 
 export function useUser() {
