@@ -121,7 +121,7 @@ export default function Home() {
               </span>
             </button>
             <figcaption
-              className={`mt-1.5 border-2 border-black px-1 py-1.5 text-center text-[10px] font-extrabold tracking-wide sm:text-[11px] ${
+              className={`mt-1.5 border-2 border-black px-1 py-1.5 text-center text-[11px] font-extrabold tracking-wide ${
                 i === 1 ? "bg-white text-black" : "bg-black text-white"
               }`}
             >
@@ -138,13 +138,13 @@ export default function Home() {
         <span aria-hidden className="tape-rose absolute -top-3 left-10 h-6 w-20 -rotate-6" />
         <Link href="/memories" className="flex items-center justify-between gap-3 p-4 sm:p-5">
           <span>
-            <span className="text-[9px] font-extrabold tracking-[0.3em] text-white/70 sm:text-[10px]">
+            <span className="text-[10px] font-extrabold tracking-[0.3em] text-white/70">
               ★ KARTU KENANGAN ★
             </span>
-            <span className="mt-1 block font-display text-[26px] leading-none sm:text-[36px]">
+            <span className="mt-1 block font-display leading-none text-[clamp(1.625rem,7vw,2.25rem)]">
               OUR MOMENTS!
             </span>
-            <span className="mt-1 block font-script text-[22px] leading-none text-blush sm:text-[26px]">
+            <span className="mt-1 block font-script leading-none text-blush text-[clamp(1.375rem,6vw,1.625rem)]">
               one card, many photos
             </span>
           </span>
@@ -158,12 +158,12 @@ export default function Home() {
       <section className="mt-4 grid gap-4 md:grid-cols-2">
         {/* left headline box */}
         <div className="flex flex-col border-[3px] border-black bg-white shadow-hardSm">
-          <h2 className="border-b-[3px] border-black py-4 text-center font-display text-[44px] leading-none sm:text-[64px]">
+          <h2 className="border-b-[3px] border-black py-4 text-center font-display leading-none text-[clamp(2.75rem,12vw,4rem)]">
             CUTE BOY!
           </h2>
           <div className="flex flex-1 flex-col items-center justify-center px-6 py-6">
-            <p className="font-script text-[42px] leading-none text-dustydeep sm:text-[54px]">My sweet</p>
-            <p className="font-script text-[30px] leading-none text-dustydeep sm:text-[38px]">heart</p>
+            <p className="font-script leading-none text-dustydeep text-[clamp(2.625rem,11vw,3.375rem)]">My sweet</p>
+            <p className="font-script leading-none text-dustydeep text-[clamp(1.875rem,8vw,2.375rem)]">heart</p>
             <p className="mx-auto mt-4 max-w-[34ch] text-center font-serif text-[10.5px] leading-relaxed">
               When you find a diamond that doesn&apos;t belong to anyone, it&apos;s yours. When you
               find an island that doesn&apos;t belong to anyone, it&apos;s yours. The stars are

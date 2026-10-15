@@ -35,7 +35,7 @@ export default function MemoriesPage() {
         <p className="border-b-[3px] border-black py-1.5 text-center text-[10px] font-extrabold tracking-[0.3em]">
           ★ MEMORY CARDS ★
         </p>
-        <h1 className="py-4 text-center font-display text-[42px] leading-none sm:text-[64px]">
+        <h1 className="py-4 text-center font-display leading-none text-[clamp(2.625rem,11vw,4rem)]">
           OUR MOMENTS!
         </h1>
         <p className="border-t-[3px] border-black py-2 text-center font-hand text-[16px] font-semibold">

@@ -98,7 +98,7 @@ export default function KelolaMemoriesPage() {
         <p className="border-b-[3px] border-black py-1.5 text-center text-[10px] font-extrabold tracking-[0.3em]">
           ★ MANAGE ★
         </p>
-        <h1 className="py-4 text-center font-display text-[36px] leading-none sm:text-[48px]">
+        <h1 className="py-4 text-center font-display leading-none text-[clamp(2.25rem,10vw,3rem)]">
           KELOLA MOMEN!
         </h1>
         <p className="border-t-[3px] border-black py-2 text-center font-serif text-[12px] italic">
