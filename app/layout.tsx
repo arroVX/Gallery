@@ -4,6 +4,7 @@ import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import BottomNav from "@/components/BottomNav";
 import SmoothScroll from "@/components/SmoothScroll";
+import { NotifyProvider } from "@/lib/notify";
 
 const display = Anton({ subsets: ["latin"], weight: ["400"], variable: "--font-display" });
 const scriptF = Great_Vibes({ subsets: ["latin"], weight: ["400"], variable: "--font-script" });
@@ -21,13 +22,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id">
       <body className={`${display.variable} ${scriptF.variable} ${serif.variable} ${sans.variable} ${hand.variable} bg-paper text-charcoal antialiased`}>
         <SmoothScroll>
-          <div className="min-h-dvh px-2 py-3 sm:px-4">
-            <div className="mx-auto min-h-[calc(100dvh-1.5rem)] w-full max-w-5xl border-[3px] border-black bg-ivory shadow-hard">
-              <SiteHeader />
-              <div className="pb-32 md:pb-10">{children}</div>
-              <BottomNav />
+          <NotifyProvider>
+            <div className="min-h-dvh px-2 py-3 sm:px-4">
+              <div className="mx-auto min-h-[calc(100dvh-1.5rem)] w-full max-w-5xl border-[3px] border-black bg-ivory shadow-hard">
+                <SiteHeader />
+                <div className="pb-32 md:pb-10">{children}</div>
+                <BottomNav />
+              </div>
             </div>
-          </div>
+          </NotifyProvider>
         </SmoothScroll>
       </body>
     </html>

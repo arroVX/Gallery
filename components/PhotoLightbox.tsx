@@ -6,6 +6,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ALBUMS, formatDate, full, type Photo } from "@/lib/gallery";
 import { usePhotos, useTimeline, useUser, type PhotoPatch } from "@/lib/store";
+import { useNotify } from "@/lib/notify";
 
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
@@ -111,6 +112,7 @@ export default function PhotoLightbox({
   const { live, updatePhoto, removePhoto } = usePhotos();
   const { events } = useTimeline();
   const user = useUser();
+  const notify = useNotify();
   const canWrite = !live || !!user;
   // Momen yang memakai foto aktif — untuk peringatan sebelum hapus.
   const usedIn =
@@ -230,7 +232,10 @@ export default function PhotoLightbox({
     setBusy(true);
     try {
       await removePhoto(photo.id);
+      notify("Foto dihapus.", "success");
       onClose();
+    } catch (e) {
+      notify(`Gagal menghapus: ${e instanceof Error ? e.message : String(e)}`, "error");
     } finally {
       setBusy(false);
     }
@@ -488,8 +493,13 @@ export default function PhotoLightbox({
                     photo={photo}
                     onCancel={() => setEditing(false)}
                     onSave={async (patch) => {
-                      await updatePhoto(photo.id, patch);
-                      setEditing(false);
+                      try {
+                        await updatePhoto(photo.id, patch);
+                        notify("Perubahan tersimpan ♥", "success");
+                        setEditing(false);
+                      } catch (e) {
+                        notify(`Gagal menyimpan: ${e instanceof Error ? e.message : String(e)}`, "error");
+                      }
                     }}
                   />
                 )}

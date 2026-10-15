@@ -10,6 +10,7 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { initFirebase, isFirebaseConfigured, firebaseInitError } from "@/lib/firebase";
 import { useEffect } from "react";
 import PhotoCropper from "@/components/PhotoCropper";
+import { useNotify } from "@/lib/notify";
 
 type Pick = { file: File; preview: string };
 
@@ -107,12 +108,11 @@ export default function UploadPage() {
   const [takenAt, setTakenAt] = useState(() => new Date().toISOString().slice(0, 10));
   const [album, setAlbum] = useState<string>("Harian");
   const [progress, setProgress] = useState<number | null>(null);
-  const [done, setDone] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [cropIndex, setCropIndex] = useState<number | null>(null);
+  const notify = useNotify();
 
   useEffect(() => {
     const { auth } = initFirebase();
@@ -121,13 +121,15 @@ export default function UploadPage() {
   }, []);
 
   const onDrop = useCallback((files: File[]) => {
-    setError(null);
-    setDone(null);
     const imgs = files.filter((f) => f.type.startsWith("image/"));
+    if (imgs.length === 0) {
+      notify("File yang dipilih bukan gambar.", "error");
+      return;
+    }
     setPicks((prev) =>
       [...prev, ...imgs.map((file) => ({ file, preview: URL.createObjectURL(file) }))].slice(0, 10)
     );
-  }, []);
+  }, [notify]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -156,29 +158,29 @@ export default function UploadPage() {
   };
 
   const login = async () => {
-    setError(null);
     try {
       const { auth } = initFirebase();
       if (!auth) return;
       await signInWithEmailAndPassword(auth, email, password);
+      notify("Selamat datang kembali ♥", "success");
     } catch (e) {
       console.error("[Auth] login error:", e);
-      setError(friendlyError(e));
+      notify(friendlyError(e), "error");
     }
   };
 
   const submit = async () => {
-    setError(null);
-    setDone(null);
-    if (picks.length === 0) return setError("Pilih minimal 1 foto dulu.");
-    if (!isFirebaseConfigured) return setError("❌ Firebase belum terkonfigurasi — cek env NEXT_PUBLIC_FIREBASE_*");
+    if (picks.length === 0) return notify("Pilih minimal 1 foto dulu.", "error");
+    if (!isFirebaseConfigured)
+      return notify("❌ Firebase belum terkonfigurasi — cek env NEXT_PUBLIC_FIREBASE_*", "error");
     // Panggil initFirebase() di sini agar db/auth pasti terinisialisasi di browser.
     const { db, auth } = initFirebase();
     if (!db)
-      return setError(
-        `❌ Firestore gagal inisialisasi — ${firebaseInitError ?? "penyebab tidak diketahui, cek console browser."}`
+      return notify(
+        `❌ Firestore gagal inisialisasi — ${firebaseInitError ?? "penyebab tidak diketahui, cek console browser."}`,
+        "error"
       );
-    if (!auth?.currentUser) return setError("❌ Belum login — silakan masuk dulu");
+    if (!auth?.currentUser) return notify("❌ Belum login — silakan masuk dulu", "error");
     try {
       let doneCount = 0;
       for (const { file } of picks) {
@@ -230,13 +232,13 @@ export default function UploadPage() {
         doneCount++;
       }
       setProgress(null);
-      setDone(`${doneCount} foto berhasil diupload.`);
+      notify(`${doneCount} foto berhasil diupload ♥`, "success");
       setPicks([]);
       setCaption("");
     } catch (err: unknown) {
       setProgress(null);
       console.error("[Upload] gagal:", err);
-      setError(friendlyError(err));
+      notify(friendlyError(err), "error");
     }
   };
 
@@ -287,7 +289,7 @@ export default function UploadPage() {
       {isFirebaseConfigured && user && (
         <div className="mt-4 flex items-center justify-between border-[3px] border-black bg-white px-4 py-2.5">
           <p className="text-xs font-bold">{user.email}</p>
-          <button onClick={() => { const { auth } = initFirebase(); auth && signOut(auth); }} className="border-2 border-black px-3 py-1 text-xs font-extrabold">
+          <button onClick={() => { const { auth } = initFirebase(); if (auth) { signOut(auth); notify("Sampai jumpa!"); } }} className="border-2 border-black px-3 py-1 text-xs font-extrabold">
             KELUAR
           </button>
         </div>
@@ -377,8 +379,6 @@ export default function UploadPage() {
           <motion.div className="h-full bg-black" animate={{ width: `${progress}%` }} />
         </div>
       )}
-      {error && <p className="mt-2 border-2 border-black bg-white p-2 text-[13px] font-bold">{error}</p>}
-      {done && <p className="mt-2 border-2 border-black bg-black p-2 text-[13px] font-bold text-white">{done}</p>}
 
       <button
         onClick={submit}

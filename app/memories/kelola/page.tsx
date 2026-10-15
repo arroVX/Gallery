@@ -12,6 +12,7 @@ import {
 import { addMemory, removeMemory, updateMemory, usePhotos, useTimeline } from "@/lib/store";
 import { resolveMemoryPhotos } from "@/components/MemoryCard";
 import { thumb } from "@/lib/gallery";
+import { useNotify } from "@/lib/notify";
 
 export default function KelolaMemoriesPage() {
   const { photos: all } = usePhotos();
@@ -28,8 +29,7 @@ export default function KelolaMemoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<string | null>(null);
+  const notify = useNotify();
 
   useEffect(() => {
     const { auth } = initFirebase();
@@ -46,19 +46,22 @@ export default function KelolaMemoriesPage() {
     });
 
   const login = async () => {
-    setError(null);
     try {
       const { auth } = initFirebase();
       if (!auth) return;
       await signInWithEmailAndPassword(auth, email, password);
+      notify("Selamat datang kembali ♥", "success");
     } catch {
-      setError("Gagal masuk. Cek email & kata sandi.");
+      notify("Gagal masuk. Cek email & kata sandi.", "error");
     }
   };
 
   const logout = async () => {
     const { auth } = initFirebase();
-    if (auth) await signOut(auth);
+    if (auth) {
+      await signOut(auth);
+      notify("Sampai jumpa!");
+    }
   };
 
   const resetForm = () => {
@@ -74,8 +77,6 @@ export default function KelolaMemoriesPage() {
   const startEdit = (id: string) => {
     const ev = events.find((e) => e.id === id);
     if (!ev) return;
-    setError(null);
-    setDone(null);
     setTitle(ev.title);
     setDate(ev.date);
     setDescription(ev.description);
@@ -87,10 +88,8 @@ export default function KelolaMemoriesPage() {
   };
 
   const save = async () => {
-    setError(null);
-    setDone(null);
-    if (!title.trim()) return setError("Isi judul momen dulu.");
-    if (picked.length === 0) return setError("Pilih minimal 1 foto.");
+    if (!title.trim()) return notify("Isi judul momen dulu.", "error");
+    if (picked.length === 0) return notify("Pilih minimal 1 foto.", "error");
     setSaving(true);
     try {
       if (editingId) {
@@ -101,7 +100,7 @@ export default function KelolaMemoriesPage() {
           coverId: coverId || picked[0],
           photoIds: picked,
         });
-        setDone(`Momen "${title.trim()}" diperbarui (${picked.length} foto).`);
+        notify(`Momen "${title.trim()}" diperbarui ♥`, "success");
       } else {
         await addMemory({
           title: title.trim(),
@@ -110,12 +109,12 @@ export default function KelolaMemoriesPage() {
           coverId: coverId || picked[0],
           photoIds: picked,
         });
-        setDone(`Momen "${title.trim()}" tersimpan (${picked.length} foto).`);
+        notify(`Momen "${title.trim()}" tersimpan ♥`, "success");
       }
       resetForm();
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      setError(`Gagal menyimpan: ${msg}`);
+      notify(`Gagal menyimpan: ${msg}`, "error");
     } finally {
       setSaving(false);
     }
@@ -126,8 +125,9 @@ export default function KelolaMemoriesPage() {
     setBusyId(id);
     try {
       await removeMemory(id);
+      notify(`Momen "${name}" dihapus.`, "success");
     } catch (e) {
-      setError(`Gagal menghapus: ${e instanceof Error ? e.message : String(e)}`);
+      notify(`Gagal menghapus: ${e instanceof Error ? e.message : String(e)}`, "error");
     } finally {
       setBusyId(null);
     }
@@ -263,9 +263,6 @@ export default function KelolaMemoriesPage() {
               ✏️ Mengubah momen yang sudah ada — SIMPAN untuk menerapkan, atau BATAL.
             </p>
           )}
-
-          {error && <p className="border-2 border-black bg-white p-2 text-[13px] font-bold">{error}</p>}
-          {done && <p className="border-2 border-black bg-black p-2 text-[13px] font-bold text-white">{done}</p>}
 
           <div className="flex gap-2">
             {editingId && (
