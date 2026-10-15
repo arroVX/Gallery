@@ -16,7 +16,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden">
       <div className="mx-auto grid w-full max-w-md grid-cols-6 border-[3px] border-black bg-black text-white shadow-hardSm">
         {TABS.map((t) => {
           const active = t.href === "/" ? pathname === "/" : pathname.startsWith(t.href);
@@ -24,10 +24,13 @@ export default function BottomNav() {
             <Link
               key={t.href}
               href={t.href}
-              className={`min-w-0 truncate border-r-2 border-white/20 px-0.5 py-2 text-center text-[8px] font-extrabold tracking-[0.06em] last:border-r-0 ${
-                active ? "bg-white text-black" : "text-white/70"
+              className={`relative min-w-0 overflow-hidden border-r-2 border-white/20 py-2.5 text-center text-[9px] font-extrabold tracking-[0.04em] last:border-r-0 ${
+                active ? "bg-white text-black" : "text-white/60 hover:text-white/90"
               }`}
             >
+              {active && (
+                <span className="absolute inset-x-0 top-0 h-[3px] bg-black" />
+              )}
               {t.label}
             </Link>
           );

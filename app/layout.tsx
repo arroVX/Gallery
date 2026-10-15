@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="min-h-dvh px-2 py-3 sm:px-4">
             <div className="mx-auto min-h-[calc(100dvh-1.5rem)] w-full max-w-5xl border-[3px] border-black bg-[#FCFDFF] shadow-hard">
               <SiteHeader />
-              <div className="pb-28 md:pb-10">{children}</div>
+              <div className="pb-32 md:pb-10">{children}</div>
               <BottomNav />
             </div>
           </div>
