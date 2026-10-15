@@ -44,9 +44,15 @@ if (isFirebaseConfigured) {
       console.error("[Firebase] Gagal getFirestore:", err);
     }
     try {
-      // URL bucket eksplisit agar support domain baru (*.firebasestorage.app)
-      // maupun lama (*.appspot.com).
-      storage = getStorage(app, `gs://${config.storageBucket}`);
+      // Pastikan prefix gs:// hanya ditambah jika belum ada.
+      // storageBucket dari env bisa berupa "xxx.appspot.com" atau
+      // "xxx.firebasestorage.app" — keduanya valid tanpa prefix di config,
+      // tapi getStorage() butuh URI gs://bucket-name jika dieksplisit.
+      const bucketVal = config.storageBucket ?? "";
+      const bucketUri = bucketVal.startsWith("gs://")
+        ? bucketVal
+        : `gs://${bucketVal}`;
+      storage = getStorage(app, bucketUri);
     } catch (err) {
       console.error("[Firebase] Gagal getStorage:", err);
     }
