@@ -30,11 +30,15 @@ const config: Config = {
         mist: "#F6F9FE",
       },
       fontFamily: {
-        serif: ['"Playfair Display"', "Georgia", "serif"],
-        sans: ["Manrope", "system-ui", "sans-serif"],
-        hand: ["Caveat", "'Segoe Script'", "'Comic Sans MS'", "'Chalkboard SE'", "cursive"],
-        display: ['"Anton"', "Arial Black", "sans-serif"],
-        script: ['"Great Vibes"', "cursive"],
+        // next/font mendaftarkan font dengan nama hash (mis. __Caveat_abc123)
+        // yang hanya bisa diakses lewat var(--font-*). Tanpa var() di sini,
+        // browser selalu jatuh ke fallback — dan tiap OS fallback-nya beda
+        // (Windows cursive = Comic Sans, Android cursive = script).
+        serif: ["var(--font-serif)", '"Playfair Display"', "Georgia", "serif"],
+        sans: ["var(--font-sans)", "Manrope", "system-ui", "sans-serif"],
+        hand: ["var(--font-hand)", "Caveat", "'Segoe Script'", "'Comic Sans MS'", "cursive"],
+        display: ["var(--font-display)", '"Anton"', "Arial Black", "sans-serif"],
+        script: ["var(--font-script)", '"Great Vibes"', "cursive"],
       },
       boxShadow: {
         soft: "0 8px 30px -12px rgba(28, 25, 23, 0.18)",
