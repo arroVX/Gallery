@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Anton, Caveat, Great_Vibes, Manrope, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
@@ -13,6 +13,12 @@ const serif = Playfair_Display({ subsets: ["latin"], weight: ["400", "500", "600
 const sans = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-sans" });
 const hand = Caveat({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-hand" });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata: Metadata = {
   title: "GALLERY — Galeri Kita Berdua",
   description: "Galeri foto scrapbook untuk kita berdua.",
@@ -25,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SmoothScroll>
           <NotifyProvider>
             <FloatingDoodles />
-            <div className="relative min-h-dvh px-2 py-3 sm:px-4">
+            <div className="relative min-h-dvh overflow-x-clip px-2 py-3 sm:px-4">
               <div className="mx-auto min-h-[calc(100dvh-1.5rem)] w-full max-w-5xl border-[3px] border-black bg-ivory shadow-hard">
                 <SiteHeader />
                 <div className="pb-32 md:pb-10">{children}</div>

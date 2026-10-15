@@ -35,26 +35,23 @@ export default function MemoryCard({
   const extra = photos.length - 1 - rest.length;
 
   return (
-    <article className="relative border-[3px] border-black bg-white shadow-hardSm">
+    <article className="relative w-full min-w-0 border-[3px] border-black bg-white shadow-hardSm">
       {typeof num === "number" && (
         <span className="sticker absolute -left-2 -top-3 z-10 flex h-9 w-9 rotate-[-6deg] items-center justify-center border-2 border-black bg-raspberry font-display text-[15px] text-white">
           {String(num + 1).padStart(2, "0")}
         </span>
       )}
-      <button onClick={onOpen} className="block w-full p-2 text-left" aria-label={`Buka ${event.title}`}>
+      <button onClick={onOpen} className="block w-full min-w-0 p-2 text-left" aria-label={`Buka ${event.title}`}>
         {cover ? (
-          <div className="overflow-hidden">
-            {/* Foto utama full-width, tinggi fix (bukan aspect-ratio + fill)
-                agar tidak pernah melar jadi raksasa kalau CSS aspect-ratio
-                gagal / img tidak absolute di WebView HP. */}
-            <div className="overflow-hidden border-2 border-black bg-black/10">
+          <div className="w-full min-w-0 overflow-hidden">
+            {/* Foto utama full-width rasio 4:3 proporsional */}
+            <div className="relative aspect-[4/3] w-full min-w-0 overflow-hidden border-2 border-black bg-black/10">
               <Image
                 src={thumb(cover.src, 800, cover.rotate ?? 0)}
                 alt={event.title}
-                width={cover.width || 800}
-                height={cover.height || 600}
-                sizes="(max-width: 768px) 90vw, 560px"
-                className="h-52 w-full object-cover sm:h-56"
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 480px"
+                className="object-cover"
                 loading="lazy"
               />
             </div>
@@ -63,19 +60,18 @@ export default function MemoryCard({
                 {rest.map((p, i) => (
                   <span
                     key={p.id}
-                    className="relative block h-16 w-full overflow-hidden border-2 border-black bg-black/10 sm:h-20"
+                    className="relative block aspect-square w-full min-w-0 overflow-hidden border-2 border-black bg-black/10"
                   >
                     <Image
                       src={thumb(p.src, 300, p.rotate ?? 0)}
                       alt={p.caption ?? "foto"}
-                      width={p.width || 400}
-                      height={p.height || 400}
-                      sizes="(max-width: 768px) 28vw, 180px"
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="(max-width: 640px) 30vw, 150px"
+                      className="object-cover"
                       loading="lazy"
                     />
                     {i === rest.length - 1 && extra > 0 && (
-                      <span className="absolute inset-0 flex items-center justify-center bg-black/55 font-display text-[20px] text-white">
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/55 font-display text-[18px] text-white">
                         +{extra}
                       </span>
                     )}

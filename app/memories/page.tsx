@@ -35,8 +35,8 @@ export default function MemoriesPage() {
   };
 
   return (
-    <main className="px-3 py-4 sm:px-5">
-      <div className="relative border-[3px] border-black bg-white shadow-hardSm">
+    <main className="w-full min-w-0 px-3 py-4 sm:px-5">
+      <div className="relative w-full border-[3px] border-black bg-white shadow-hardSm">
         <span aria-hidden className="tape absolute -top-3 left-8 z-10 h-6 w-20 -rotate-6" />
         <span aria-hidden className="tape-rose absolute -top-3 right-8 z-10 h-6 w-20 rotate-6" />
         <p className="border-b-[3px] border-black py-1.5 text-center text-[10px] font-extrabold tracking-[0.3em]">
@@ -78,7 +78,7 @@ export default function MemoriesPage() {
           </p>
         </div>
       ) : (
-        <div className="mx-auto mt-4 grid max-w-4xl gap-4 sm:grid-cols-2">
+        <div className="mx-auto mt-4 grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
           {visibleEvents.map((ev, n) => (
             <MemoryCard
               key={ev.id}
@@ -93,7 +93,7 @@ export default function MemoriesPage() {
 
       <PhotoLightbox photos={openPhotos} index={index} onClose={close} onNav={setIndex} />
 
-      <p className="mt-6 text-center font-mono text-[9px] opacity-40">build mc5</p>
+      <p className="mt-6 text-center font-mono text-[9px] opacity-40">build mc6</p>
     </main>
   );
 }
