@@ -31,7 +31,7 @@ export default function MemoryCard({
   num?: number;
 }) {
   const cover = photos.find((p) => p.id === event.coverId) ?? photos[0];
-  const rest = photos.filter((p) => p.id !== cover?.id).slice(0, 2);
+  const rest = photos.filter((p) => p.id !== cover?.id).slice(0, 3);
   const extra = photos.length - 1 - rest.length;
 
   return (
@@ -43,44 +43,42 @@ export default function MemoryCard({
       )}
       <button onClick={onOpen} className="block w-full p-2 text-left" aria-label={`Buka ${event.title}`}>
         {cover ? (
-          <div className="grid h-44 grid-cols-[3fr_2fr] grid-rows-1 gap-1.5 overflow-hidden sm:h-52">
-            {/* Cover photo — left, tall */}
-            <span className="relative block h-full min-h-0 min-w-0 overflow-hidden border-2 border-black bg-black/10">
+          <div className="overflow-hidden">
+            {/* Foto utama full-width, tinggi fix seperti kartu timeline */}
+            <div className="relative h-52 overflow-hidden border-2 border-black bg-black/10 sm:h-64">
               <Image
-                src={thumb(cover.src, 600)}
+                src={thumb(cover.src, 800)}
                 alt={event.title}
                 fill
-                sizes="(max-width: 768px) 58vw, 340px"
+                sizes="(max-width: 768px) 90vw, 560px"
                 className="object-cover"
                 loading="lazy"
               />
-            </span>
-            {/* Right column — 2 stacked thumbnails */}
-            <span className="grid h-full min-h-0 min-w-0 grid-rows-2 gap-1.5">
-              {rest.length > 0 ? (
-                rest.map((p, i) => (
-                  <span key={p.id} className="relative block min-h-0 overflow-hidden border-2 border-black bg-black/10">
+            </div>
+            {rest.length > 0 && (
+              <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+                {rest.map((p, i) => (
+                  <span
+                    key={p.id}
+                    className="relative block h-16 overflow-hidden border-2 border-black bg-black/10 sm:h-20"
+                  >
                     <Image
                       src={thumb(p.src, 300)}
                       alt={p.caption ?? "foto"}
                       fill
-                      sizes="(max-width: 768px) 38vw, 220px"
+                      sizes="(max-width: 768px) 28vw, 180px"
                       className="object-cover"
                       loading="lazy"
                     />
-                    {i === 1 && extra > 0 && (
+                    {i === rest.length - 1 && extra > 0 && (
                       <span className="absolute inset-0 flex items-center justify-center bg-black/55 font-display text-[20px] text-white">
                         +{extra}
                       </span>
                     )}
                   </span>
-                ))
-              ) : (
-                <span className="col-span-full flex h-full items-center justify-center border-2 border-dashed border-black/40 p-2 text-center font-serif text-[11px] italic">
-                  {photos.length} foto
-                </span>
-              )}
-            </span>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div className="border-2 border-dashed border-black bg-white p-8 text-center">
