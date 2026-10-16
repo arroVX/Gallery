@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ALBUMS, downloadUrl, formatDate, full, thumb, type Photo } from "@/lib/gallery";
+import { collectAlbums, formatDate, full, thumb, type Photo } from "@/lib/gallery";
 import { usePhotos, useTimeline, useUser, type PhotoPatch } from "@/lib/store";
 import { useNotify } from "@/lib/notify";
 
@@ -22,10 +22,12 @@ const clampPan = (p: { x: number; y: number }, zoom: number) => {
 
 function EditForm({
   photo,
+  albums,
   onSave,
   onCancel,
 }: {
   photo: Photo;
+  albums: string[];
   onSave: (patch: PhotoPatch) => Promise<void>;
   onCancel: () => void;
 }) {
@@ -40,80 +42,81 @@ function EditForm({
   const save = async () => {
     setSaving(true);
     try {
-      await onSave({ caption, location, takenAt, album, favorite, rotate: rotation });
+      const cleanAlbum = album.trim() || "Harian";
+      await onSave({ caption, location, takenAt, album: cleanAlbum, favorite, rotate: rotation });
     } finally {
       setSaving(false);
     }
   };
 
   const input =
-    "w-full rounded-xl border border-black/10 bg-black/[0.03] px-3 py-2.5 text-sm font-medium outline-none focus:border-charcoal";
+    "w-full border-2 border-black bg-white px-3 py-2.5 text-sm font-bold outline-none";
 
   return (
-    <div className="mt-4 space-y-2 rounded-2xl border border-black/[0.06] bg-black/[0.02] p-3">
+    <div className="mt-4 space-y-2 border-[3px] border-black bg-cream p-3 shadow-hardSm">
+      <p className="text-center text-[10px] font-extrabold tracking-[0.3em]">✎ EDIT FOTO</p>
       <input value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Caption" className={input} />
       <div className="grid grid-cols-2 gap-2">
         <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Lokasi" className={input} />
         <input value={takenAt} onChange={(e) => setTakenAt(e.target.value)} type="date" className={input} />
       </div>
-      <div className="flex gap-1.5">
-        {ALBUMS.filter((a) => a !== "Semua").map((a) => (
-          <button
-            key={a}
-            onClick={() => setAlbum(a)}
-            className={`flex-1 rounded-full py-2 text-[11px] font-bold ${
-              album === a ? "bg-charcoal text-white" : "bg-black/[0.06] text-charcoal"
-            }`}
-          >
-            {a}
-          </button>
+      <input
+        value={album}
+        onChange={(e) => setAlbum(e.target.value)}
+        placeholder="Kategori — ketik baru / pilih saran"
+        list="lb-album-suggest"
+        className={input}
+      />
+      <datalist id="lb-album-suggest">
+        {albums.map((a) => (
+          <option key={a} value={a} />
         ))}
-      </div>
+      </datalist>
       <button
         onClick={() => setFavorite((f) => !f)}
-        className="flex w-full items-center justify-between rounded-xl bg-white px-3 py-2.5 text-sm font-bold"
+        className="flex w-full items-center justify-between border-2 border-black bg-white px-3 py-2.5 text-sm font-extrabold"
       >
-        <span>Jadikan favorit</span>
+        <span>★ Jadikan favorit</span>
         <span
-          className={`flex h-6 w-11 items-center rounded-full p-0.5 transition ${
-            favorite ? "justify-end bg-charcoal" : "justify-start bg-charcoal/20"
+          className={`flex h-6 w-11 items-center border-2 border-black px-0.5 transition ${
+            favorite ? "justify-end bg-raspberry" : "justify-start bg-black/10"
           }`}
         >
-          <span className="h-5 w-5 rounded-full bg-white" />
+          <span className="h-4 w-4 bg-white" />
         </span>
       </button>
-      <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2">
+      <div className="flex items-center gap-2 border-2 border-black bg-white px-3 py-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photo.src}
           alt="pratinjau putar"
           style={{ transform: `rotate(${rotation}deg)` }}
-          className="h-14 w-14 shrink-0 border border-black object-cover transition-transform"
+          className="h-14 w-14 shrink-0 border-2 border-black object-cover transition-transform"
         />
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-bold tracking-widest">PUTAR FOTO</p>
+          <p className="text-[11px] font-extrabold tracking-widest">PUTAR FOTO</p>
           <p className="truncate font-serif text-[11px] italic opacity-70">
             Tersimpan permanen — berlaku di semua halaman.
           </p>
         </div>
         <button
           onClick={() => setRotation((r) => (r + 90) % 360)}
-          className="shrink-0 border-2 border-black bg-white px-3 py-1.5 text-[15px] font-extrabold"
+          className="shrink-0 border-2 border-black bg-black px-3 py-1.5 text-[15px] font-extrabold text-white"
           aria-label="Putar 90 derajat"
         >
           ⟳ {rotation}°
         </button>
       </div>
       <div className="flex gap-2">
-        <button onClick={onCancel} className="flex-1 rounded-full border border-black/15 py-2.5 text-sm font-bold">
-          Batal
+        <button onClick={onCancel} className="flex-1 border-2 border-black bg-white py-2.5 text-[12px] font-extrabold tracking-widest">
+          BATAL
         </button>
         <button
           onClick={save}
           disabled={saving}
-          className="flex-1 rounded-full bg-charcoal py-2.5 text-sm font-bold text-white disabled:opacity-50"
+          className="flex-1 border-2 border-black bg-raspberry py-2.5 text-[12px] font-extrabold tracking-widest text-white disabled:opacity-50"
         >
-          {saving ? "Menyimpan…" : "Simpan"}
+          {saving ? "MENYIMPAN…" : "SIMPAN ♥"}
         </button>
       </div>
     </div>
@@ -125,14 +128,19 @@ export default function PhotoLightbox({
   index,
   onClose,
   onNav,
+  moment,
 }: {
   photos: Photo[];
   index: number | null;
   onClose: () => void;
   onNav: (index: number) => void;
+  // Konteks momen (dari kartu momen): panel info menampilkan judul +
+  // deskripsi momen, bukan caption/lokasi foto.
+  moment?: { title: string; description?: string; date?: string } | null;
 }) {
   const photo: Photo | null = index === null ? null : photos[index] ?? null;
-  const { live, updatePhoto, removePhoto } = usePhotos();
+  const { photos: allPhotos, live, updatePhoto, removePhoto } = usePhotos();
+  const albumOptions = collectAlbums(allPhotos);
   const { events } = useTimeline();
   const user = useUser();
   const notify = useNotify();
@@ -163,7 +171,8 @@ export default function PhotoLightbox({
   useEffect(() => {
     setEditing(false);
     setConfirming(false);
-    setZoom(1);
+    // Zoom sengaja TIDAK direset saat pindah foto — foto yang diperbesar
+    // tetap diperbesar saat dislide. Pan direset agar posisi tidak aneh.
     setPan({ x: 0, y: 0 });
     setRotation(0);
     setFocus(false);
@@ -171,6 +180,14 @@ export default function PhotoLightbox({
     pointers.current.clear();
     pinchDist.current = null;
   }, [photo?.id]);
+
+  // Reset zoom hanya saat lightbox dibuka/ditutup.
+  useEffect(() => {
+    if (index === null) {
+      setZoom(1);
+      setPan({ x: 0, y: 0 });
+    }
+  }, [index]);
 
   const zoomIn = useCallback(() => {
     setZoom((z) => {
@@ -208,28 +225,15 @@ export default function PhotoLightbox({
     }
   }, [photo, updatePhoto, notify]);
 
-  const share = useCallback(async () => {
+  const rotatePermanent = useCallback(async () => {
     if (!photo) return;
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: photo.caption || "Foto",
-          text: photo.caption,
-          url: photo.src,
-        });
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(photo.src);
-        notify("Link foto disalin.", "success");
-      } else {
-        notify("Bagikan tidak didukung browser ini.", "error");
-      }
+      await updatePhoto(photo.id, { rotate: ((photo.rotate ?? 0) + 90) % 360 });
+      notify("Foto diputar & tersimpan ♥", "success");
     } catch (e) {
-      // Pembatalan share sheet oleh user bukan error.
-      if ((e as Error)?.name !== "AbortError") {
-        notify(`Gagal membagikan: ${(e as Error)?.message ?? String(e)}`, "error");
-      }
+      notify(`Gagal memutar: ${e instanceof Error ? e.message : String(e)}`, "error");
     }
-  }, [photo, notify]);
+  }, [photo, updatePhoto, notify]);
 
   const toggleZoom = useCallback(() => {
     setZoom((z) => {
@@ -316,6 +320,8 @@ export default function PhotoLightbox({
     } else if (zoom > 1) {
       lastPt.current = { x: e.clientX, y: e.clientY };
       setDragging(true);
+      // Catat calon swipe juga — geser cepat = pindah foto (zoom dipertahankan).
+      swipe.current = { x: e.clientX, y: e.clientY, t: Date.now() };
     } else if (pointers.current.size === 1) {
       // Calon gestur geser pindah foto (hanya saat belum zoom).
       swipe.current = { x: e.clientX, y: e.clientY, t: Date.now() };
@@ -351,13 +357,14 @@ export default function PhotoLightbox({
     if (pointers.current.size < 2) pinchDist.current = null;
     if (pointers.current.size === 0) {
       setDragging(false);
-      // Geser horizontal cepat saat belum zoom = pindah foto.
+      // Geser horizontal cepat = pindah foto (berlaku juga saat zoom —
+      // zoom dipertahankan). Geser pelan saat zoom = pan (sudah diterapkan
+      // selama drag, lalu foto pindah hanya jika memenuhi syarat cepat).
       // Abaikan jika dilepas di atas tombol (mis. toolbar zoom).
       const s = swipe.current;
       swipe.current = null;
       if (
         s &&
-        zoom === 1 &&
         photos.length > 1 &&
         !(e.target as HTMLElement).closest?.("button")
       ) {
@@ -480,10 +487,20 @@ export default function PhotoLightbox({
                     onClick={rotate}
                     className="border-l-2 border-black px-2 py-1.5 text-[14px] font-extrabold sm:px-2.5"
                     aria-label="Putar 90 derajat"
-                    title="Putar"
+                    title="Putar (sementara, untuk lihat)"
                   >
                     ⟳
                   </button>
+                  {canWrite && (
+                    <button
+                      onClick={rotatePermanent}
+                      className="border-l-2 border-black bg-raspberry px-2 py-1.5 text-[14px] font-extrabold text-white sm:px-2.5"
+                      aria-label="Putar permanen dan simpan"
+                      title="Putar permanen & simpan"
+                    >
+                      ↻
+                    </button>
+                  )}
                   <button
                     onClick={() => setFocus((f) => !f)}
                     className="border-l-2 border-black bg-black px-2 py-1.5 text-[12px] font-extrabold text-white sm:px-2.5"
@@ -562,12 +579,16 @@ export default function PhotoLightbox({
                 {infoOpen && (
                 <>
                 <p className="text-[11px] font-bold tracking-widest text-charcoal/50">
-                  {formatDate(photo.takenAt).toUpperCase()} — {photo.album.toUpperCase()}
+                  {moment?.date
+                    ? formatDate(moment.date).toUpperCase()
+                    : `${formatDate(photo.takenAt).toUpperCase()} — ${photo.album.toUpperCase()}`}
                 </p>
                 <h3 className="mt-2 font-display text-[30px] leading-none tracking-wide">
-                  {photo.caption.toUpperCase()}
+                  {(moment?.title || photo.caption || "Tanpa judul").toUpperCase()}
                 </h3>
-                <p className="mt-1 font-hand text-[17px] font-semibold">{photo.location}</p>
+                <p className="mt-1 font-hand text-[17px] font-semibold">
+                  {moment?.description || photo.location}
+                </p>
 
                 {canWrite ? (
                   <>
@@ -613,6 +634,7 @@ export default function PhotoLightbox({
                   <EditForm
                     key={photo.id}
                     photo={photo}
+                    albums={albumOptions}
                     onCancel={() => setEditing(false)}
                     onSave={async (patch) => {
                       try {
@@ -625,23 +647,6 @@ export default function PhotoLightbox({
                     }}
                   />
                 )}
-
-                <div className="mt-3 flex gap-2">
-                  <a
-                    href={downloadUrl(photo.src, photo.rotate ?? 0)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 border-2 border-black bg-white py-2 text-center text-[11px] font-extrabold tracking-widest"
-                  >
-                    ⤓ UNDUH HD
-                  </a>
-                  <button
-                    onClick={share}
-                    className="flex-1 border-2 border-black bg-white py-2 text-[11px] font-extrabold tracking-widest"
-                  >
-                    ⤴ BAGIKAN
-                  </button>
-                </div>
 
                 {usedIn.length > 0 && (
                   <div className="mt-3">

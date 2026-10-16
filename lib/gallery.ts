@@ -78,15 +78,21 @@ export const thumb = (src: string, width = 400, rotate = 0): string => {
   return `${src.slice(0, i + marker.length)}w_${width},q_auto,f_auto,a_auto${angleOf(rotate)}/${rest}`;
 };
 
-// URL unduh paksa (Content-Disposition attachment) untuk URL Cloudinary.
-// Bukan URL Cloudinary -> kembalikan asli (browser yang menangani).
-export const downloadUrl = (src: string, rotate = 0): string => {
-  const marker = "/image/upload/";
-  const i = src.indexOf(marker);
-  if (!src.startsWith("https://res.cloudinary.com/") || i < 0) return src;
-  const rest = src.slice(i + marker.length);
-  if (/^[a-z]+_[^/]*\//.test(rest)) return src;
-  return `${src.slice(0, i + marker.length)}fl_attachment,q_auto,f_auto,a_auto${angleOf(rotate)}/${rest}`;
+// URL unduh paksa dihapus — fitur unduh tidak dipakai lagi.
+
+// Daftar kategori unik dari data foto (case-insensitive) digabung saran
+// bawaan, untuk chips filter gallery & datalist input album.
+export const collectAlbums = (photos: Photo[]): string[] => {
+  const seen = new Map<string, string>();
+  const push = (a: unknown) => {
+    const t = String(a ?? "").trim();
+    if (!t) return;
+    const k = t.toLowerCase();
+    if (!seen.has(k)) seen.set(k, t);
+  };
+  ALBUMS.filter((a) => a !== "Semua").forEach(push);
+  photos.forEach((p) => push(p.album));
+  return Array.from(seen.values());
 };
 
 // Versi penuh untuk popup detail: kualitas/format otomatis +

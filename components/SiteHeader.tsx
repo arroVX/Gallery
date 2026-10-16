@@ -25,9 +25,8 @@ export default function SiteHeader() {
     <header>
       {/* top dateline */}
       <div className="flex items-center justify-between bg-raspberry px-3 py-1.5 text-[10px] font-bold tracking-[0.14em] text-white sm:px-5">
-        <span>★ EST. 2024 — KITA BERDUA</span>
         <span className="hidden sm:inline">{today.toUpperCase()}</span>
-        <span>EDITION NO. 01</span>
+        <span className="ml-auto">EDITION NO. 01</span>
       </div>
 
       {/* masthead */}

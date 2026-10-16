@@ -4,7 +4,8 @@ import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import imageCompression from "browser-image-compression";
 import { motion } from "framer-motion";
-import { ALBUMS } from "@/lib/gallery";
+import { collectAlbums } from "@/lib/gallery";
+import { usePhotos } from "@/lib/store";
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, type User } from "firebase/auth";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { initFirebase, isFirebaseConfigured, firebaseInitError } from "@/lib/firebase";
@@ -107,6 +108,9 @@ export default function UploadPage() {
   const [location, setLocation] = useState("");
   const [takenAt, setTakenAt] = useState(() => new Date().toISOString().slice(0, 10));
   const [album, setAlbum] = useState<string>("Harian");
+  const { photos: existingPhotos } = usePhotos();
+  const albumOptions = collectAlbums(existingPhotos);
+  const MAX_PHOTOS = 30;
   const [progress, setProgress] = useState<number | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
@@ -127,14 +131,14 @@ export default function UploadPage() {
       return;
     }
     setPicks((prev) =>
-      [...prev, ...imgs.map((file) => ({ file, preview: URL.createObjectURL(file) }))].slice(0, 10)
+      [...prev, ...imgs.map((file) => ({ file, preview: URL.createObjectURL(file) }))].slice(0, MAX_PHOTOS)
     );
   }, [notify]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "image/*": [] },
-    maxFiles: 10,
+    maxFiles: MAX_PHOTOS,
   });
 
   const remove = (i: number) =>
@@ -225,7 +229,7 @@ export default function UploadPage() {
           caption: caption || file.name,
           location,
           takenAt,
-          album,
+          album: album.trim() || "Harian",
           uploadedAt: serverTimestamp(),
           isFavorite: false,
           rotate: 0,
@@ -304,7 +308,7 @@ export default function UploadPage() {
       >
         <input {...getInputProps()} />
         <p className="font-display text-[20px] tracking-wide">{isDragActive ? "LEPASKAN DI SINI" : "KETUK / SERET FOTO KE SINI"}</p>
-        <p className="mt-1 font-serif text-xs italic">Maks 10 foto — ketuk ✂ untuk potong dulu bila perlu</p>
+        <p className="mt-1 font-serif text-xs italic">Maks {MAX_PHOTOS} foto — ketuk ✂ untuk potong dulu bila perlu</p>
       </div>
 
       {picks.length > 0 && (
@@ -362,17 +366,18 @@ export default function UploadPage() {
             className="border-2 border-black bg-white px-3 py-2.5 text-sm outline-none"
           />
         </div>
-        <div className="flex gap-2">
-          {ALBUMS.filter((a) => a !== "Semua").map((a) => (
-            <button
-              key={a}
-              onClick={() => setAlbum(a)}
-              className={`flex-1 border-2 border-black py-2 text-xs font-extrabold ${album === a ? "bg-black text-white" : "bg-white"}`}
-            >
-              {a.toUpperCase()}
-            </button>
+        <input
+          value={album}
+          onChange={(e) => setAlbum(e.target.value)}
+          placeholder="Kategori — ketik baru / pilih saran"
+          list="upload-album-suggest"
+          className="w-full border-2 border-black bg-white px-3 py-2.5 text-sm font-bold outline-none"
+        />
+        <datalist id="upload-album-suggest">
+          {albumOptions.map((a) => (
+            <option key={a} value={a} />
           ))}
-        </div>
+        </datalist>
       </div>
 
       {progress !== null && (

@@ -2,25 +2,44 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ALBUMS } from "@/lib/gallery";
+import { collectAlbums, formatDate, type Photo } from "@/lib/gallery";
 import { usePhotos } from "@/lib/store";
 import GalleryGrid from "@/components/GalleryGrid";
 import PhotoLightbox from "@/components/PhotoLightbox";
 
 export default function GalleryPage() {
-  const [album, setAlbum] = useState<(typeof ALBUMS)[number] | "Favorit">("Semua");
+  const [album, setAlbum] = useState<string>("Semua");
   const [query, setQuery] = useState("");
   const [index, setIndex] = useState<number | null>(null);
   const { photos: all, live, loading, error } = usePhotos();
 
+  // Kategori mengikuti data (custom) — bukan daftar tetap.
+  const chips = useMemo(() => ["Semua", ...collectAlbums(all), "Favorit"], [all]);
+  // Kategori aktif yang sudah tidak ada di data (mis. habis diedit) → Semua.
+  const activeAlbum = chips.includes(album) ? album : "Semua";
+
   const photos = useMemo(() => {
     const q = query.trim().toLowerCase();
     return all.filter((p) => {
-      if (album === "Favorit" ? !p.favorite : album !== "Semua" && p.album !== album) return false;
+      if (activeAlbum === "Favorit" ? !p.favorite : activeAlbum !== "Semua" && p.album !== activeAlbum) return false;
       if (q && !`${p.caption} ${p.location}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [album, query, all]);
+  }, [activeAlbum, query, all]);
+
+  // Kelompok per tanggal (hari), terbaru dulu. Tiap item menyimpan
+  // index global agar lightbox prev/next tidak terputus antar tanggal.
+  const groups = useMemo(() => {
+    const byDate = new Map<string, { p: Photo; gi: number }[]>();
+    photos.forEach((p, gi) => {
+      const k = (p.takenAt || "").slice(0, 10);
+      if (!byDate.has(k)) byDate.set(k, []);
+      byDate.get(k)!.push({ p, gi });
+    });
+    return Array.from(byDate.entries())
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([date, items]) => ({ date, items }));
+  }, [photos]);
 
   useEffect(() => {
     if (index !== null && index >= photos.length) {
@@ -54,12 +73,12 @@ export default function GalleryPage() {
       </div>
 
       <div className="no-scrollbar -mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1">
-        {[...ALBUMS, "Favorit"].map((a, n) => {
-          const active = a === album;
+        {chips.map((a, n) => {
+          const active = a === activeAlbum;
           return (
             <button
               key={a}
-              onClick={() => setAlbum(a as (typeof ALBUMS)[number] | "Favorit")}
+              onClick={() => setAlbum(a)}
               className={`sticker flex shrink-0 items-center gap-2 border-[2.5px] border-black px-4 py-2 text-[11px] font-extrabold tracking-[0.14em] transition ${
                 active ? "bg-raspberry text-white" : "bg-white hover:bg-blush"
               }`}
@@ -91,14 +110,24 @@ export default function GalleryPage() {
       ) : (
         <AnimatePresence mode="wait">
           <motion.div
-            key={`${album}-${query}`}
+            key={`${activeAlbum}-${query}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.22 }}
             className="mt-4"
           >
-            <GalleryGrid photos={photos} onSelect={setIndex} />
+            {groups.map((g) => (
+              <section key={g.date} className="mt-6 first:mt-0">
+                <div className="mb-3 border-[3px] border-black bg-black px-3 py-1.5 text-center text-[11px] font-extrabold tracking-[0.2em] text-white">
+                  {formatDate(g.date).toUpperCase()} — {g.items.length} FOTO
+                </div>
+                <GalleryGrid
+                  photos={g.items.map((x) => x.p)}
+                  onSelect={(i) => setIndex(g.items[i].gi)}
+                />
+              </section>
+            ))}
           </motion.div>
         </AnimatePresence>
       )}

@@ -92,7 +92,7 @@ export default function Home() {
 
       {/* ── PHOTO STRIP: 3 cards + label bars ── */}
       <div className="mt-4">
-        <Marquee items={["GALLERY", "OUR MOMENTS", "EST. 2024", "KITA BERDUA"]} />
+        <Marquee items={["GALLERY", "OUR MOMENTS", "KITA BERDUA"]} />
       </div>
       <section className="mt-4 grid grid-cols-3 gap-2 sm:gap-4">
         {strip.map((p, i) => (

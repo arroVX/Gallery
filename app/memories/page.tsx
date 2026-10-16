@@ -18,6 +18,8 @@ export default function MemoriesPage() {
     return resolveMemoryPhotos(ev, all);
   }, [events, all, openId]);
 
+  const openEvent = openId ? events.find((e) => e.id === openId) ?? null : null;
+
   // Kartu yang fotonya sudah habis dihapus tidak ditampilkan ke pengunjung —
   // perbaiki lewat /memories/kelola (tombol EDIT).
   const visibleEvents = useMemo(
@@ -91,7 +93,17 @@ export default function MemoriesPage() {
         </div>
       )}
 
-      <PhotoLightbox photos={openPhotos} index={index} onClose={close} onNav={setIndex} />
+      <PhotoLightbox
+        photos={openPhotos}
+        index={index}
+        onClose={close}
+        onNav={setIndex}
+        moment={
+          openEvent
+            ? { title: openEvent.title, description: openEvent.description, date: openEvent.date }
+            : null
+        }
+      />
 
       <p className="mt-6 text-center font-mono text-[9px] opacity-40">build mc8</p>
     </main>
