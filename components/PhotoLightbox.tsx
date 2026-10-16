@@ -605,11 +605,11 @@ export default function PhotoLightbox({
                     <button
                       onClick={doDelete}
                       disabled={busy}
-                      className={`flex-1 rounded-full py-2.5 text-[13px] font-bold active:scale-[0.98] disabled:opacity-50 ${
-                        confirming ? "bg-red-700 text-white" : "border border-red-300 bg-white text-red-700"
+                      className={`flex-1 border-2 border-black py-2.5 text-[12px] font-extrabold tracking-widest active:translate-x-[2px] active:translate-y-[2px] disabled:opacity-50 ${
+                        confirming ? "bg-red-700 text-white" : "bg-white text-red-700"
                       }`}
                     >
-                      {busy ? "Menghapus…" : confirming ? "Ketuk lagi untuk hapus" : "Hapus"}
+                      {busy ? "MENGHAPUS…" : confirming ? "KETUK LAGI!" : "HAPUS"}
                     </button>
                   </div>
                   {confirming && usedIn.length > 0 && (
