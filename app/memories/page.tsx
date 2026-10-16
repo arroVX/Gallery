@@ -105,7 +105,7 @@ export default function MemoriesPage() {
         }
       />
 
-      <p className="mt-6 text-center font-mono text-[9px] opacity-40">build mc8</p>
+      <p className="mt-6 text-center font-mono text-[9px] opacity-40">build mc9</p>
     </main>
   );
 }

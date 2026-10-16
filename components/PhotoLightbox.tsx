@@ -50,13 +50,13 @@ function EditForm({
   };
 
   const input =
-    "w-full border-2 border-black bg-white px-3 py-2.5 text-sm font-bold outline-none";
+    "w-full min-w-0 border-2 border-black bg-white px-3 py-2 text-sm font-bold outline-none";
 
   return (
-    <div className="mt-4 space-y-2 border-[3px] border-black bg-cream p-3 shadow-hardSm">
+    <div className="mt-4 w-full min-w-0 space-y-2 border-[3px] border-black bg-cream p-3 shadow-hardSm">
       <p className="text-center text-[10px] font-extrabold tracking-[0.3em]">✎ EDIT FOTO</p>
       <input value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Caption" className={input} />
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Lokasi" className={input} />
         <input value={takenAt} onChange={(e) => setTakenAt(e.target.value)} type="date" className={input} />
       </div>
@@ -74,47 +74,47 @@ function EditForm({
       </datalist>
       <button
         onClick={() => setFavorite((f) => !f)}
-        className="flex w-full items-center justify-between border-2 border-black bg-white px-3 py-2.5 text-sm font-extrabold"
+        className="flex w-full min-w-0 items-center justify-between border-2 border-black bg-white px-3 py-2 text-sm font-extrabold"
       >
         <span>★ Jadikan favorit</span>
         <span
-          className={`flex h-6 w-11 items-center border-2 border-black px-0.5 transition ${
+          className={`flex h-6 w-11 shrink-0 items-center border-2 border-black px-0.5 transition ${
             favorite ? "justify-end bg-raspberry" : "justify-start bg-black/10"
           }`}
         >
           <span className="h-4 w-4 bg-white" />
         </span>
       </button>
-      <div className="flex items-center gap-2 border-2 border-black bg-white px-3 py-2">
+      <div className="flex w-full min-w-0 items-center gap-2 border-2 border-black bg-white p-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photo.src}
           alt="pratinjau putar"
           style={{ transform: `rotate(${rotation}deg)` }}
-          className="h-14 w-14 shrink-0 border-2 border-black object-cover transition-transform"
+          className="h-12 w-12 shrink-0 border-2 border-black object-cover transition-transform"
         />
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-extrabold tracking-widest">PUTAR FOTO</p>
-          <p className="truncate font-serif text-[11px] italic opacity-70">
-            Tersimpan permanen — berlaku di semua halaman.
+          <p className="truncate font-serif text-[10px] italic opacity-70">
+            Tersimpan permanen.
           </p>
         </div>
         <button
           onClick={() => setRotation((r) => (r + 90) % 360)}
-          className="shrink-0 border-2 border-black bg-black px-3 py-1.5 text-[15px] font-extrabold text-white"
+          className="shrink-0 border-2 border-black bg-black px-2.5 py-1 text-[13px] font-extrabold text-white"
           aria-label="Putar 90 derajat"
         >
           ⟳ {rotation}°
         </button>
       </div>
       <div className="flex gap-2">
-        <button onClick={onCancel} className="flex-1 border-2 border-black bg-white py-2.5 text-[12px] font-extrabold tracking-widest">
+        <button onClick={onCancel} className="flex-1 border-2 border-black bg-white py-2 text-[12px] font-extrabold tracking-widest">
           BATAL
         </button>
         <button
           onClick={save}
           disabled={saving}
-          className="flex-1 border-2 border-black bg-raspberry py-2.5 text-[12px] font-extrabold tracking-widest text-white disabled:opacity-50"
+          className="flex-1 border-2 border-black bg-raspberry py-2 text-[12px] font-extrabold tracking-widest text-white disabled:opacity-50"
         >
           {saving ? "MENYIMPAN…" : "SIMPAN ♥"}
         </button>
@@ -394,7 +394,7 @@ export default function PhotoLightbox({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 60, opacity: 0, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="relative max-h-[92dvh] w-full max-w-3xl overflow-y-auto border-[3px] border-black bg-[#FFFDF7] shadow-hard"
+            className="relative max-h-[92dvh] w-full max-w-3xl overflow-x-hidden overflow-y-auto border-[3px] border-black bg-[#FFFDF7] shadow-hard"
           >
             <div className="absolute right-3 top-3 z-10 flex gap-1.5">
               {canWrite && (
@@ -417,165 +417,168 @@ export default function PhotoLightbox({
                 ✕
               </button>
             </div>
-            <div className={focus ? "grid" : "grid sm:grid-cols-[1.25fr_1fr]"}>
-              {/* ── Zoomable photo frame ── */}
-              <div
-                ref={frameRef}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={endPointer}
-                onPointerCancel={endPointer}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  toggleZoom();
-                }}
-                style={{ touchAction: zoom > 1 ? "none" : "pan-y" }}
-                className={`relative flex min-h-[320px] select-none items-center justify-center overflow-hidden border-b-[3px] border-black bg-black sm:min-h-[480px] sm:border-b-0 sm:border-r-[3px] ${
-                  zoom === 1 ? "cursor-zoom-in" : dragging ? "cursor-grabbing" : "cursor-grab"
-                }`}
-              >
+            <div className={focus ? "grid w-full min-w-0" : "grid w-full min-w-0 sm:grid-cols-[1.25fr_1fr]"}>
+              {/* ── Sisi Kiri: Foto + Filmstrip ── */}
+              <div className="flex w-full min-w-0 flex-col border-b-[3px] border-black sm:border-b-0 sm:border-r-[3px]">
+                {/* ── Zoomable photo frame ── */}
                 <div
-                  className="flex h-full w-full items-center justify-center"
-                  style={{
-                    transform: `translate(${pan.x}px, ${pan.y}px) rotate(${rotation}deg) scale(${zoom})`,
-                    transformOrigin: "center center",
-                    transition: dragging ? "none" : "transform 160ms ease-out",
+                  ref={frameRef}
+                  onPointerDown={onPointerDown}
+                  onPointerMove={onPointerMove}
+                  onPointerUp={endPointer}
+                  onPointerCancel={endPointer}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    toggleZoom();
                   }}
+                  style={{ touchAction: zoom > 1 ? "none" : "pan-y" }}
+                  className={`relative flex min-h-[300px] w-full min-w-0 select-none items-center justify-center overflow-hidden bg-black sm:min-h-[480px] ${
+                    zoom === 1 ? "cursor-zoom-in" : dragging ? "cursor-grabbing" : "cursor-grab"
+                  }`}
                 >
-                  <Image
-                    key={photo.id}
-                    src={full(photo.src, photo.rotate ?? 0)}
-                    alt={photo.caption}
-                    width={photo.width}
-                    height={photo.height}
-                    sizes="(max-width: 640px) 100vw, 560px"
-                    className={`h-auto w-full object-contain ${focus ? "max-h-[80dvh]" : "max-h-[55dvh] sm:max-h-[72dvh]"}`}
-                    priority
-                    draggable={false}
-                  />
-                </div>
-                <div className="absolute left-3 top-3 border-2 border-black bg-white px-3 py-1 text-[10px] font-extrabold tracking-[0.14em]">
-                  {(photo.location || photo.album).toUpperCase()}
+                  <div
+                    className="flex h-full w-full items-center justify-center"
+                    style={{
+                      transform: `translate(${pan.x}px, ${pan.y}px) rotate(${rotation}deg) scale(${zoom})`,
+                      transformOrigin: "center center",
+                      transition: dragging ? "none" : "transform 160ms ease-out",
+                    }}
+                  >
+                    <Image
+                      key={photo.id}
+                      src={full(photo.src, photo.rotate ?? 0)}
+                      alt={photo.caption}
+                      width={photo.width}
+                      height={photo.height}
+                      sizes="(max-width: 640px) 100vw, 560px"
+                      className={`h-auto w-full object-contain ${focus ? "max-h-[80dvh]" : "max-h-[55dvh] sm:max-h-[72dvh]"}`}
+                      priority
+                      draggable={false}
+                    />
+                  </div>
+                  <div className="absolute left-3 top-3 border-2 border-black bg-white px-3 py-1 text-[10px] font-extrabold tracking-[0.14em]">
+                    {(photo.location || photo.album).toUpperCase()}
+                  </div>
+
+                  {/* zoom toolbar */}
+                  <div
+                    className="absolute bottom-3 right-3 z-10 flex items-stretch border-2 border-black bg-white"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onDoubleClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      onClick={zoomOut}
+                      disabled={zoom <= MIN_ZOOM}
+                      className="px-2 py-1.5 text-[14px] font-extrabold disabled:opacity-30 sm:px-3"
+                      aria-label="Zoom out"
+                    >
+                      −
+                    </button>
+                    <span className="flex items-center border-x-2 border-black px-2 font-mono text-[11px] font-bold">
+                      {zoom.toFixed(1)}×
+                    </span>
+                    <button
+                      onClick={zoomIn}
+                      disabled={zoom >= MAX_ZOOM}
+                      className="px-2 py-1.5 text-[14px] font-extrabold disabled:opacity-30 sm:px-3"
+                      aria-label="Zoom in"
+                    >
+                      +
+                    </button>
+                    <button
+                      onClick={rotate}
+                      className="border-l-2 border-black px-2 py-1.5 text-[14px] font-extrabold sm:px-2.5"
+                      aria-label="Putar 90 derajat"
+                      title="Putar (sementara, untuk lihat)"
+                    >
+                      ⟳
+                    </button>
+                    {canWrite && (
+                      <button
+                        onClick={rotatePermanent}
+                        className="border-l-2 border-black bg-raspberry px-2 py-1.5 text-[14px] font-extrabold text-white sm:px-2.5"
+                        aria-label="Putar permanen dan simpan"
+                        title="Putar permanen & simpan"
+                      >
+                        ↻
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setFocus((f) => !f)}
+                      className="border-l-2 border-black bg-black px-2 py-1.5 text-[12px] font-extrabold text-white sm:px-2.5"
+                      aria-label="Mode foto penuh"
+                      title="Foto penuh"
+                    >
+                      {focus ? "✕" : "⛶"}
+                    </button>
+                    {zoom > 1 && (
+                      <button
+                        onClick={resetZoom}
+                        className="border-l-2 border-black bg-black px-2 text-[10px] font-extrabold tracking-widest text-white"
+                        aria-label="Reset zoom"
+                      >
+                        1×
+                      </button>
+                    )}
+                  </div>
+                  <p className="absolute bottom-3 left-3 hidden border border-white/60 bg-black/70 px-2 py-1 text-[9px] font-bold tracking-[0.14em] text-white sm:block">
+                    {zoom > 1 ? "GESER UNTUK JELAJAH" : "KETUK 2× / CUBIT: ZOOM • ⟳: PUTAR"}
+                  </p>
+                  {focus && (
+                    <>
+                      <button
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          prev();
+                        }}
+                        className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-black bg-white text-[18px] font-extrabold"
+                        aria-label="Foto sebelumnya"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          next();
+                        }}
+                        className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-black bg-white text-[18px] font-extrabold"
+                        aria-label="Foto berikutnya"
+                      >
+                        ›
+                      </button>
+                    </>
+                  )}
                 </div>
 
-                {/* zoom toolbar */}
-                <div
-                  className="absolute bottom-3 right-3 z-10 flex items-stretch border-2 border-black bg-white"
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onDoubleClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    onClick={zoomOut}
-                    disabled={zoom <= MIN_ZOOM}
-                    className="px-2 py-1.5 text-[14px] font-extrabold disabled:opacity-30 sm:px-3"
-                    aria-label="Zoom out"
-                  >
-                    −
-                  </button>
-                  <span className="flex items-center border-x-2 border-black px-2 font-mono text-[11px] font-bold">
-                    {zoom.toFixed(1)}×
-                  </span>
-                  <button
-                    onClick={zoomIn}
-                    disabled={zoom >= MAX_ZOOM}
-                    className="px-2 py-1.5 text-[14px] font-extrabold disabled:opacity-30 sm:px-3"
-                    aria-label="Zoom in"
-                  >
-                    +
-                  </button>
-                  <button
-                    onClick={rotate}
-                    className="border-l-2 border-black px-2 py-1.5 text-[14px] font-extrabold sm:px-2.5"
-                    aria-label="Putar 90 derajat"
-                    title="Putar (sementara, untuk lihat)"
-                  >
-                    ⟳
-                  </button>
-                  {canWrite && (
-                    <button
-                      onClick={rotatePermanent}
-                      className="border-l-2 border-black bg-raspberry px-2 py-1.5 text-[14px] font-extrabold text-white sm:px-2.5"
-                      aria-label="Putar permanen dan simpan"
-                      title="Putar permanen & simpan"
-                    >
-                      ↻
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setFocus((f) => !f)}
-                    className="border-l-2 border-black bg-black px-2 py-1.5 text-[12px] font-extrabold text-white sm:px-2.5"
-                    aria-label="Mode foto penuh"
-                    title="Foto penuh"
-                  >
-                    {focus ? "✕" : "⛶"}
-                  </button>
-                  {zoom > 1 && (
-                    <button
-                      onClick={resetZoom}
-                      className="border-l-2 border-black bg-black px-2 text-[10px] font-extrabold tracking-widest text-white"
-                      aria-label="Reset zoom"
-                    >
-                      1×
-                    </button>
-                  )}
-                </div>
-                <p className="absolute bottom-3 left-3 hidden border border-white/60 bg-black/70 px-2 py-1 text-[9px] font-bold tracking-[0.14em] text-white sm:block">
-                  {zoom > 1 ? "GESER UNTUK JELAJAH" : "KETUK 2× / CUBIT: ZOOM • ⟳: PUTAR"}
-                </p>
-                {focus && (
-                  <>
-                    <button
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        prev();
-                      }}
-                      className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-black bg-white text-[18px] font-extrabold"
-                      aria-label="Foto sebelumnya"
-                    >
-                      ‹
-                    </button>
-                    <button
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        next();
-                      }}
-                      className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-black bg-white text-[18px] font-extrabold"
-                      aria-label="Foto berikutnya"
-                    >
-                      ›
-                    </button>
-                  </>
+                {photos.length > 1 && (
+                  <div className="no-scrollbar flex w-full min-w-0 gap-1.5 overflow-x-auto border-t-[3px] border-black bg-black/5 p-1.5">
+                    {photos.map((p, i) => (
+                      <button
+                        key={p.id}
+                        onClick={() => onNav(i)}
+                        aria-label={`Ke foto ${i + 1}`}
+                        className={`h-12 w-12 shrink-0 overflow-hidden border-2 transition ${
+                          i === index ? "border-raspberry" : "border-black/30 opacity-60"
+                        }`}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={thumb(p.src, 150, p.rotate ?? 0)}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                          draggable={false}
+                        />
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
 
-              {photos.length > 1 && (
-                <div className="no-scrollbar flex gap-1.5 overflow-x-auto border-b-[3px] border-black bg-black/5 p-1.5">
-                  {photos.map((p, i) => (
-                    <button
-                      key={p.id}
-                      onClick={() => onNav(i)}
-                      aria-label={`Ke foto ${i + 1}`}
-                      className={`h-12 w-12 shrink-0 overflow-hidden border-2 transition ${
-                        i === index ? "border-raspberry" : "border-black/30 opacity-60"
-                      }`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={thumb(p.src, 150, p.rotate ?? 0)}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                        draggable={false}
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-
               {!focus && (
-              <div className="p-5 sm:p-6">
+              <div className="w-full min-w-0 p-4 sm:p-6">
                 {infoOpen && (
                 <>
                 <p className="text-[11px] font-bold tracking-widest text-charcoal/50">
