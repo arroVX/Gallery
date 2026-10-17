@@ -15,7 +15,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden">
-      <div className="sticker mx-auto grid w-full max-w-md grid-cols-5 overflow-hidden border-[3px] border-black bg-raspberry text-white">
+      <div className={`sticker mx-auto grid w-full max-w-md overflow-hidden border-[3px] border-black bg-raspberry text-white grid-cols-${TABS.length}`}>
         {TABS.map((t) => {
           const active = t.href === "/" ? pathname === "/" : pathname.startsWith(t.href);
           return (
