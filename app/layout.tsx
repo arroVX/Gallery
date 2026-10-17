@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Anton, Caveat, Great_Vibes, Manrope, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
-import BottomNav from "@/components/BottomNav";
 import SmoothScroll from "@/components/SmoothScroll";
 import FloatingDoodles from "@/components/FloatingDoodles";
 import DisclaimerModal from "@/components/DisclaimerModal";
@@ -37,7 +36,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <DisclaimerModal />
                 <SiteHeader />
                 <div className="pb-32 md:pb-10">{children}</div>
-                <BottomNav />
               </div>
             </div>
           </NotifyProvider>
