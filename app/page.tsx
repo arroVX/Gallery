@@ -8,6 +8,7 @@ import { TIMELINE, formatDate } from "@/lib/gallery";
 import { usePhotos } from "@/lib/store";
 import PhotoLightbox from "@/components/PhotoLightbox";
 import Marquee from "@/components/Marquee";
+import DisclaimerModal from "@/components/DisclaimerModal";
 
 const START = new Date("2024-02-14T00:00:00");
 const daysTogether = Math.max(
@@ -35,6 +36,7 @@ export default function Home() {
 
   return (
     <main className="px-3 py-4 sm:px-5">
+      <DisclaimerModal />
       {/* ── FRONT PAGE TOP: hero + NEW UPDATE ── */}
       <section className="grid border-[3px] border-black bg-white md:grid-cols-2">
         {/* left big photo */}
