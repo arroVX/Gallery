@@ -105,6 +105,18 @@ export default function MemoriesPage() {
         }
       />
 
+      <div className="mx-auto mt-10 max-w-2xl border-[3px] border-black bg-white shadow-hardSm">
+        <p className="border-b-[3px] border-black py-1.5 text-center text-[10px] font-extrabold tracking-[0.3em]">
+          ★ TERIMAKASIH ★
+        </p>
+        <h1 className="py-4 text-center font-display leading-none text-[clamp(2.625rem,11vw,4rem)] text-raspberry">
+          KITA SUDAH SELESAI SAMPAI SINI
+        </h1>
+        <p className="border-t-[3px] border-black py-2 text-center font-serif text-[12px] italic text-charcoal/60">
+          Terima kasih atas semua momen ♥
+        </p>
+      </div>
+
       <p className="mt-6 text-center font-mono text-[9px] opacity-40">build mc9</p>
     </main>
   );
