@@ -1,15 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function DisclaimerModal() {
   const [show, setShow] = useState(true);
-
-  useEffect(() => {
-    // Hanya tampilkan sekali per perangkat (simpan di localStorage).
-    const seen = localStorage.getItem("gallery:disclaimer-seen");
-    if (seen === "1") setShow(false);
-  }, []);
 
   if (!show) return null;
 
@@ -33,10 +27,7 @@ export default function DisclaimerModal() {
             sebelum melanjutkan.
           </p>
           <button
-            onClick={() => {
-              localStorage.setItem("gallery:disclaimer-seen", "1");
-              setShow(false);
-            }}
+            onClick={() => setShow(false)}
             className="sticker border-[3px] border-black bg-raspberry px-6 py-2.5 text-sm font-extrabold tracking-[0.2em] text-white"
           >
             MENGERTI, LANJUTKAN

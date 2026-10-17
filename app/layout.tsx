@@ -5,6 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 import BottomNav from "@/components/BottomNav";
 import SmoothScroll from "@/components/SmoothScroll";
 import FloatingDoodles from "@/components/FloatingDoodles";
+import DisclaimerModal from "@/components/DisclaimerModal";
 import { NotifyProvider } from "@/lib/notify";
 
 const display = Anton({ subsets: ["latin"], weight: ["400"], variable: "--font-display" });
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <FloatingDoodles />
             <div className="relative min-h-dvh px-2 py-3 sm:px-4">
               <div className="mx-auto min-h-[calc(100dvh-1.5rem)] w-full max-w-5xl border-[3px] border-black bg-ivory shadow-hard">
+                <DisclaimerModal />
                 <SiteHeader />
                 <div className="pb-32 md:pb-10">{children}</div>
                 <BottomNav />
